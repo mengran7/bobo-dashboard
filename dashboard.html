@@ -244,7 +244,13 @@
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
+function getApiBase() {
+  const origin = window.location.origin;
+  if (origin === 'file://' || origin === 'null' || !origin) {
+    return 'http://' + window.location.hostname + ':' + (window.location.port || '8080');
+  }
+  return origin;
+}
 const LS = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
@@ -323,7 +329,7 @@ async function refreshStocks() {
   const sg = $('sgStocks'); const us = $('usStocks'); const gold = $('goldBox');
   if (sg) sg.innerHTML = '<div class="stock-item"><div class="stock-price">加载中...</div></div>';
   try {
-    const res = await fetch(window.location.origin + '/api/stocks');
+    const res = await fetch(getApiBase() + '/api/stocks');
     const data = await res.json();
     renderStocks(data);
   } catch (e) {
@@ -428,7 +434,7 @@ async function refreshBobo() {
   if (errors) errors.textContent = '-';
   if (lesson) lesson.textContent = '加载中...';
   try {
-    const res = await fetch(window.location.origin + '/api/state');
+    const res = await fetch(getApiBase() + '/api/state');
     const data = await res.json();
     if (!data || Object.keys(data).length === 0) {
       if (stars) stars.textContent = '-';
@@ -521,7 +527,7 @@ async function refreshNews() {
   const list = $('newsList');
   if (list) list.innerHTML = '<div class="card"><p style="text-align:center;color:#999;">加载中...</p></div>';
   try {
-    const res = await fetch(window.location.origin + '/api/news');
+    const res = await fetch(getApiBase() + '/api/news');
     const data = await res.json();
     renderNews(data.articles || []);
   } catch (e) {
@@ -635,7 +641,7 @@ function renderMiniStocks() {
     });
   } else {
     container.innerHTML = '<div style="color:#999;font-size:12px;">加载中...</div>';
-    fetch(window.location.origin + '/api/stocks').then(r => r.json()).then(data => {
+    fetch(getApiBase() + '/api/stocks').then(r => r.json()).then(data => {
       LS.set('stockCache', { time: Date.now(), prices: data.prices || {} });
       renderMiniStocks();
     }).catch(() => {
@@ -652,7 +658,7 @@ function renderMiniNews() {
     container.innerHTML = cache.articles.slice(0, 3).map(a => '<div class="mini-card" style="margin-bottom:6px;"><div style="font-weight:600;font-size:13px;">' + a.title + '</div><div style="font-size:11px;color:#636e72;">' + a.source + '</div></div>').join('');
   } else {
     container.innerHTML = '<div style="color:#999;font-size:12px;">加载中...</div>';
-    fetch(window.location.origin + '/api/news').then(r => r.json()).then(data => {
+    fetch(getApiBase() + '/api/news').then(r => r.json()).then(data => {
       LS.set('newsCache', { articles: data.articles || [] });
       renderMiniNews();
     }).catch(() => {
