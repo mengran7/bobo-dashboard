@@ -867,22 +867,24 @@ init();
 const DEFAULT_FORTUNE_BIRTH = { year: 1984, month: 3, day: 25, gender: 'female', hour: 14, minute: 30 };
 
 function saveFortuneBirth() {
+  const result = $('fortuneResult');
   const dateVal = $('fortuneBirthDate').value;
   const gender = $('fortuneGender').value;
   if (!dateVal) { alert('请先输入出生日期'); return; }
   const [y, m, d] = dateVal.split('-').map(Number);
   const birth = { year: y, month: m, day: d, gender, hour: 14, minute: 30 };
   LS.set('fortuneBirth', birth);
-  result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  if (result) result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   loadFortune(birth);
 }
 
 function resetFortuneBirth() {
+  const result = $('fortuneResult');
   const birth = DEFAULT_FORTUNE_BIRTH;
   LS.set('fortuneBirth', birth);
   $('fortuneBirthDate').value = birth.year + '-' + String(birth.month).padStart(2,'0') + '-' + String(birth.day).padStart(2,'0');
   $('fortuneGender').value = birth.gender;
-  result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  if (result) result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   loadFortune(birth);
 }
 
