@@ -140,7 +140,7 @@
       <h3>✅ 今日小目标</h3>
       <div id="todoList"></div>
       <input type="text" id="todoInput" placeholder="添加一个新目标..." />
-      <button class="btn" onclick="addTodo()">＋ 添加</button>
+      <button class="btn" id="addTodoBtn">＋ 添加</button>
     </div>
     <div class="card">
       <h3>🔥 习惯打卡</h3>
@@ -315,6 +315,9 @@ function renderTodos() {
     input.value = '';
     renderTodos();
   };
+  input.onkeydown = (e) => {
+    if (e.key === 'Enter') addBtn.click();
+  };
 }
 
 function toggleTodo(i) {
@@ -329,6 +332,21 @@ function delTodo(i) {
   todos.splice(i, 1);
   LS.set('todos', todos);
   renderTodos();
+}
+
+function saveAnswer() {
+  const input = $('answerInput');
+  const qEl = $('dailyQuestion');
+  const q = qEl ? qEl.textContent : '';
+  const text = input ? input.value.trim() : '';
+  if (!text) return;
+  const list = LS.get('manifestAnswers', []);
+  list.unshift({ q, a: text, time: today() });
+  LS.set('manifestAnswers', list.slice(0, 50));
+  if (input) input.value = '';
+  const past = $('pastAnswers');
+  if (past) past.innerHTML = '<p style="color:#6c5ce7;">已回答 ✨</p>' + past.innerHTML;
+  initManifest();
 }
 
 function spawnStar(el) {
@@ -906,8 +924,13 @@ function renderFortune() {
     `;
     result.innerHTML = html;
   }).catch(() => {
-    result.innerHTML = '<div style="color:#636e72;">开运数据加载失败，请稍后重试</div>';
+    result.innerHTML = '<div style="color:#e17055;">开运数据加载失败</div><button class="btn btn-secondary" onclick="resetFortuneBirth()" style="margin-top:8px;">重新输入生辰</button>';
   });
+}
+
+function resetFortuneBirth() {
+  LS.set('fortuneBirth', null);
+  renderFortune();
 }
 </script>
 

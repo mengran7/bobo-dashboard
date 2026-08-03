@@ -17,6 +17,22 @@ NEWS_SOURCES = [
 
 FORTUNE_CACHE = os.path.join(DIR, 'fortune-cache.json')
 
+_GAN_WUXING = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'}
+_ZHI_WUXING = {'寅':'木','卯':'木','巳':'火','午':'火','申':'金','酉':'金','亥':'水','子':'水','辰':'土','戌':'土','丑':'土','未':'土'}
+
+def _wuxing_from_bazi(bazi_data):
+    counts = {}
+    pillars = bazi_data.get('data', {}).get('pillars', {})
+    for p in ['year', 'month', 'day', 'hour']:
+        pillar = pillars.get(p, {})
+        gan = pillar.get('gan', '')
+        zhi = pillar.get('zhi', '')
+        for ch in [gan, zhi]:
+            el = _GAN_WUXING.get(ch) or _ZHI_WUXING.get(ch)
+            if el:
+                counts[el] = counts.get(el, 0) + 1
+    return [{'element': k, 'count': v} for k, v in counts.items()]
+
 def _hour_to_time_index(hour):
     return (hour + 1) % 24 // 2
 
@@ -232,13 +248,12 @@ class Handler(SimpleHTTPRequestHandler):
                 })
 
                 dm = bazi_resp.get('data', {}).get('dayMaster', {})
-                wuxing = wuxing_resp.get('data', {})
                 almanac = almanac_resp.get('data', {})
+                today_data = almanac.get('days', [{}])[0] if almanac.get('days') else {}
 
                 fortune = {
                     'dayMaster': f"{dm.get('yinYang', '')}{dm.get('element', '')}日主",
-                    'wuxing': wuxing.get('wuxingDistribution', []),
-                    'todayAlmanac': almanac.get('almanacDays', [{}])[0] if almanac.get('almanacDays') else {},
+                    'todayAlmanac': today_data,
                     'date': today_str
                 }
 
