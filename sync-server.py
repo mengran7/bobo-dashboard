@@ -47,8 +47,14 @@ def _mingyu_post(path, payload):
             'Referer': 'https://aov.cc/'
         }
     )
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        return json.loads(resp.read().decode('utf-8'))
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8') if e.fp else ''
+        raise RuntimeError(f'MINGYU {path} HTTP {e.code}: {body[:200]}')
+    except Exception as e:
+        raise RuntimeError(f'MINGYU {path} ERROR: {e}')
 
 class Handler(SimpleHTTPRequestHandler):
     def _cors(self):
@@ -201,31 +207,19 @@ class Handler(SimpleHTTPRequestHandler):
                 payload = json.loads(body.decode('utf-8')) if body else {}
                 birth = payload.get('birth', {})
                 today = __import__('datetime').datetime.now()
-                today_str = f"{today.year}-{today.month}-{today.day}"
+                today_str = today.strftime('%Y-%m-%d')
 
                 gender_cn = '女' if birth.get('gender') == 'female' else '男'
+                gender_en = birth.get('gender', 'female')
                 bazi_resp = _mingyu_post('/bazi/calculate', {
                     'year': birth.get('year', 1990),
                     'month': birth.get('month', 1),
                     'day': birth.get('day', 1),
-                    'gender': gender_cn,
+                    'gender': gender_en,
                     'birthHour': birth.get('hour', 12),
                     'birthMinute': birth.get('minute', 0),
                     'dateType': 'solar',
                     'useTrueSolarTime': True,
-                    'birthLatitude': birth.get('latitude', 31.2),
-                    'birthLongitude': birth.get('longitude', 121.5),
-                    'timeZoneId': birth.get('timeZoneId', 'Asia/Shanghai')
-                })
-
-                wuxing_resp = _mingyu_post('/foundation/wuxing', {
-                    'year': birth.get('year', 1990),
-                    'month': birth.get('month', 1),
-                    'day': birth.get('day', 1),
-                    'gender': gender_cn,
-                    'birthHour': birth.get('hour', 12),
-                    'birthMinute': birth.get('minute', 0),
-                    'dateType': 'solar',
                     'birthLatitude': birth.get('latitude', 31.2),
                     'birthLongitude': birth.get('longitude', 121.5),
                     'timeZoneId': birth.get('timeZoneId', 'Asia/Shanghai')
@@ -253,6 +247,7 @@ class Handler(SimpleHTTPRequestHandler):
 
                 fortune = {
                     'dayMaster': f"{dm.get('yinYang', '')}{dm.get('element', '')}日主",
+                    'wuxing': _wuxing_from_bazi(bazi_resp),
                     'todayAlmanac': today_data,
                     'date': today_str
                 }
