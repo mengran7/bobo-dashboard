@@ -877,13 +877,19 @@ const DEFAULT_FORTUNE_BIRTH = { year: 1990, month: 6, day: 15, gender: 'female',
 
 function renderFortune() {
   const result = $('fortuneResult');
+  const inputEl = $('fortuneInput');
   let birth = LS.get('fortuneBirth');
   if (!birth) {
     birth = DEFAULT_FORTUNE_BIRTH;
     LS.set('fortuneBirth', birth);
   }
+  const migrated = { ...DEFAULT_FORTUNE_BIRTH, ...birth };
+  if (migrated.hour === undefined) migrated.hour = DEFAULT_FORTUNE_BIRTH.hour;
+  if (migrated.minute === undefined) migrated.minute = DEFAULT_FORTUNE_BIRTH.minute;
+  LS.set('fortuneBirth', migrated);
+  birth = migrated;
   result.style.display = 'block';
-  $('fortuneInput').style.display = 'none';
+  if (inputEl) inputEl.style.display = 'none';
   result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   const body = JSON.stringify({ birth });
   fetch(getApiBase() + '/api/fortune', {
