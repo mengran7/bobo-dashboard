@@ -889,6 +889,7 @@ function resetFortuneBirth() {
 }
 
 function loadFortune(birth) {
+  const result = $('fortuneResult');
   const body = JSON.stringify({ birth });
   fetch(getApiBase() + '/api/fortune', {
     method: 'POST',
@@ -927,6 +928,7 @@ function loadFortune(birth) {
     `;
     result.innerHTML = html;
   }).catch(() => {
+    const result = $('fortuneResult');
     result.innerHTML = '<div style="color:#e17055;">开运数据加载失败</div><button class="btn btn-secondary" onclick="resetFortuneBirth()" style="margin-top:8px;">重新加载</button>';
   });
 }
