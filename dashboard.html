@@ -116,11 +116,11 @@
 <button class="refresh-btn" onclick="refreshAll()" title="刷新">🔄</button>
 
 <div class="bottom-nav">
-  <a href="javascript:void(0)" class="active" data-tab="today" onclick="switchTab('today')"><span class="emoji">📋</span>今日</a>
-  <a href="javascript:void(0)" data-tab="stocks" onclick="switchTab('stocks')"><span class="emoji">📈</span>股票</a>
-  <a href="javascript:void(0)" data-tab="manifest" onclick="switchTab('manifest')"><span class="emoji">💭</span>显化</a>
-  <a href="javascript:void(0)" data-tab="news" onclick="switchTab('news')"><span class="emoji">📰</span>新闻</a>
-  <a href="javascript:void(0)" data-tab="journal" onclick="switchTab('journal')"><span class="emoji">📝</span>日记</a>
+  <div class="active" data-tab="today" onclick="switchTab('today')"><span class="emoji">📋</span>今日</div>
+  <div data-tab="stocks" onclick="switchTab('stocks')"><span class="emoji">📈</span>股票</div>
+  <div data-tab="manifest" onclick="switchTab('manifest')"><span class="emoji">💭</span>显化</div>
+  <div data-tab="news" onclick="switchTab('news')"><span class="emoji">📰</span>新闻</div>
+  <div data-tab="journal" onclick="switchTab('journal')"><span class="emoji">📝</span>日记</div>
 </div>
 
 <div class="container">
@@ -465,7 +465,6 @@ function renderNews() {
 }
 
 function switchTab(tab) {
-  alert('switchTab called: ' + tab);
   try {
     const active = document.querySelector('.panel.show');
     if (active && active.id === tab) return;
@@ -475,9 +474,9 @@ function switchTab(tab) {
     if (btn) btn.classList.add("active");
     const panel = $(tab);
     if (panel) panel.classList.add("show");
-    document.querySelectorAll(".bottom-nav a").forEach(a => a.classList.remove("active"));
-    const link = document.querySelector(`.bottom-nav a[data-tab="${tab}"]`);
-    if (link) link.classList.add("active");
+    document.querySelectorAll(".bottom-nav div").forEach(d => d.classList.remove("active"));
+    const div = document.querySelector(`.bottom-nav div[data-tab="${tab}"]`);
+    if (div) div.classList.add("active");
     if (tab === "stocks") refreshStocks();
     if (tab === "bobo") refreshBobo();
     if (tab === "manifest") initManifest();
@@ -498,6 +497,16 @@ document.querySelectorAll(".left-nav button").forEach(btn => {
   });
   btn.addEventListener("touchend", (e) => {
     const tab = btn.dataset.tab;
+    if (tab) switchTab(tab);
+  });
+});
+document.querySelectorAll(".bottom-nav div").forEach(div => {
+  div.addEventListener("click", (e) => {
+    const tab = div.dataset.tab;
+    if (tab) switchTab(tab);
+  });
+  div.addEventListener("touchend", (e) => {
+    const tab = div.dataset.tab;
     if (tab) switchTab(tab);
   });
 });
