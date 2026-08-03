@@ -108,6 +108,7 @@
 
 <div class="header">
   <h1>我的工作台</h1>
+  <div id="tabError" style="display:none;background:#ff7675;color:white;padding:6px 10px;border-radius:8px;margin-top:6px;font-size:12px;"></div>
   <div class="date" id="headerDate"></div>
   <div class="greeting" id="greeting"></div>
 </div>
@@ -464,19 +465,26 @@ function renderNews() {
 }
 
 function switchTab(tab) {
-  document.querySelectorAll(".left-nav button").forEach(b => b.classList.remove("active"));
-  document.querySelectorAll(".panel").forEach(p => p.classList.remove("show"));
-  const btn = document.querySelector(`.left-nav button[data-tab="${tab}"]`);
-  if (btn) btn.classList.add("active");
-  const panel = $(tab);
-  if (panel) panel.classList.add("show");
-  document.querySelectorAll(".bottom-nav a").forEach(a => a.classList.remove("active"));
-  const link = document.querySelector(`.bottom-nav a[data-tab="${tab}"]`);
-  if (link) link.classList.add("active");
-  if (tab === "stocks") refreshStocks();
-  if (tab === "bobo") refreshBobo();
-  if (tab === "manifest") initManifest();
-  if (tab === "news") refreshNews();
+  try {
+    const active = document.querySelector('.panel.show');
+    if (active && active.id === tab) return;
+    document.querySelectorAll(".left-nav button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("show"));
+    const btn = document.querySelector(`.left-nav button[data-tab="${tab}"]`);
+    if (btn) btn.classList.add("active");
+    const panel = $(tab);
+    if (panel) panel.classList.add("show");
+    document.querySelectorAll(".bottom-nav a").forEach(a => a.classList.remove("active"));
+    const link = document.querySelector(`.bottom-nav a[data-tab="${tab}"]`);
+    if (link) link.classList.add("active");
+    if (tab === "stocks") refreshStocks();
+    if (tab === "bobo") refreshBobo();
+    if (tab === "manifest") initManifest();
+    if (tab === "news") refreshNews();
+  } catch (e) {
+    const err = $('tabError');
+    if (err) { err.textContent = '切换出错: ' + e.message; err.style.display = 'block'; }
+  }
 }
 window.addEventListener('hashchange', () => {
   const h = location.hash.replace('#','');
