@@ -465,6 +465,7 @@ function renderNews() {
 }
 
 function switchTab(tab) {
+  alert('switchTab called: ' + tab);
   try {
     const active = document.querySelector('.panel.show');
     if (active && active.id === tab) return;
