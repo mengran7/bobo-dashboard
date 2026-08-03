@@ -142,6 +142,14 @@
       <input type="text" id="todoInput" placeholder="添加一个新目标..." />
       <button class="btn" onclick="addTodo()">＋ 添加</button>
     </div>
+    <div class="card">
+      <h3>🔥 习惯打卡</h3>
+      <div id="habitList"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <input type="text" id="habitInput" placeholder="添加习惯..." style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;" />
+        <button class="btn" onclick="addHabit()">＋</button>
+      </div>
+    </div>
   </div>
 
   <!-- 股票 -->
@@ -232,6 +240,12 @@
       <div id="reviewOutput" style="margin-top:10px;"></div>
     </div>
     <div id="journalList"></div>
+    <div class="card" style="margin-top:10px;">
+      <h3>📊 本周周报</h3>
+      <p style="font-size:13px;color:#636e72;margin:0 0 8px;">自动汇总本周记账、日记和目标完成情况</p>
+      <button class="btn btn-secondary" onclick="generateWeeklyReport()" style="width:100%;">📝 生成周报</button>
+      <div id="weeklyReport" style="margin-top:10px;"></div>
+    </div>
   </div>
 
 </div>
@@ -517,6 +531,123 @@ function renderAccounts() {
   }
 }
 
+function addHabit() {
+  const input = $('habitInput');
+  const name = input ? input.value.trim() : '';
+  if (!name) return;
+  const habits = LS.get('habits', []);
+  habits.push({ name, createdAt: today() });
+  LS.set('habits', habits.slice(0, 20));
+  if (input) input.value = '';
+  renderHabits();
+}
+
+function delHabit(i) {
+  const habits = LS.get('habits', []);
+  habits.splice(i, 1);
+  LS.set('habits', habits.slice(0, 20));
+  renderHabits();
+}
+
+function toggleHabit(i) {
+  const habits = LS.get('habits', []);
+  const todayStr2 = todayStr();
+  if (!habits[i]) return;
+  if (!habits[i].done) habits[i].done = {};
+  habits[i].done[todayStr2] = !habits[i].done[todayStr2];
+  LS.set('habits', habits.slice(0, 20));
+  renderHabits();
+}
+
+function renderHabits() {
+  const list = $('habitList');
+  if (!list) return;
+  const habits = LS.get('habits', []);
+  if (!habits.length) { list.innerHTML = '<div style="color:#999;font-size:13px;">还没有习惯，添加一个开始吧</div>'; return; }
+  const todayStr2 = todayStr();
+  list.innerHTML = habits.map((h, i) => {
+    const done = !!(h.done && h.done[todayStr2]);
+    const streak = calcStreak(h.done || {});
+    return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;">
+        <button onclick="toggleHabit(${i})" style="width:28px;height:28px;border-radius:50%;border:2px solid ${done ? '#6c5ce7' : '#dfe6e9'};background:${done ? '#6c5ce7' : 'white'};color:white;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;">${done ? '✓' : ''}</button>
+        <div>
+          <div style="font-weight:600;font-size:14px;${done ? 'text-decoration:line-through;color:#b2bec3;' : ''}">${h.name}</div>
+          <div style="font-size:11px;color:#636e72;">🔥 连续 ${streak} 天</div>
+        </div>
+      </div>
+      <button class="del-btn" onclick="delHabit(${i})" style="font-size:11px;">删除</button>
+    </div>`;
+  }).join('');
+}
+
+function calcStreak(doneMap) {
+  if (!doneMap || !Object.keys(doneMap).length) return 0;
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (doneMap[key]) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+function generateReview() {
+  const output = $('reviewOutput');
+  if (!output) return;
+  const journals = LS.get('journals', []);
+  const todayStr2 = today();
+  const todayJournal = journals.find(j => j.time.startsWith(todayStr2));
+  if (!todayJournal) { output.innerHTML = '<div class="card" style="color:#999;">今天还没有日记，先写点什么吧</div>'; return; }
+  const todos = LS.get('todos', []).filter(t => t.done);
+  const habits = LS.get('habits', []);
+  const doneToday = habits.filter(h => h.done && h.done[todayStr2]);
+  output.innerHTML = `<div class="card">
+    <div style="font-weight:600;margin-bottom:8px;color:#6c5ce7;">🌙 ${todayStr2} 晚间复盘</div>
+    <div style="font-size:13px;line-height:1.6;">
+      今天你完成了 <b>${todos.length}</b> 个目标，打卡了 <b>${doneToday.length}</b> 个习惯。<br/>
+      你在日记里写道："${todayJournal.text.slice(0, 80)}${todayJournal.text.length > 80 ? '...' : ''}"<br/><br/>
+      <b>✨ 今日亮点：</b>坚持本身就是胜利，明天继续加油！
+    </div>
+  </div>`;
+}
+
+function generateWeeklyReport() {
+  const output = $('weeklyReport');
+  if (!output) return;
+  const now = new Date();
+  const day = now.getDay() || 7;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - day + 1);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const weekStart = fmt(monday);
+  const weekEnd = fmt(sunday);
+
+  const journals = LS.get('journals', []).filter(j => j.time >= weekStart);
+  const accounts = LS.get('accounts', []).filter(a => a.time >= weekStart);
+  const todos = LS.get('todos', []).filter(t => t.time >= weekStart);
+  const habits = LS.get('habits', []);
+  const habitDays = habits.reduce((s, h) => s + (h.done ? Object.keys(h.done).filter(k => k >= weekStart).length : 0), 0);
+
+  const expense = accounts.filter(a => a.type === 'expense').reduce((s, a) => s + a.amount, 0);
+  const income = accounts.filter(a => a.type === 'income').reduce((s, a) => s + a.amount, 0);
+  const completedTodos = todos.filter(t => t.done).length;
+
+  output.innerHTML = `<div class="card">
+    <div style="font-weight:600;margin-bottom:8px;color:#6c5ce7;">📅 ${weekStart} ~ ${weekEnd}</div>
+    <div style="display:grid;gap:6px;font-size:13px;">
+      <div>💸 本周支出：<b>$${expense.toFixed(2)}</b> · 收入：<b>$${income.toFixed(2)}</b></div>
+      <div>✅ 完成目标：<b>${completedTodos}</b> 个</div>
+      <div>🔥 习惯打卡：<b>${habitDays}</b> 次</div>
+      <div>✍️ 日记：<b>${journals.length}</b> 篇</div>
+    </div>
+    ${journals.length ? '<div style="margin-top:10px;font-weight:600;font-size:13px;">📝 本周日记摘要</div>' + journals.slice(0, 5).map(j => `<div style="font-size:12px;color:#636e72;margin-top:4px;padding:6px;background:#f8f9fa;border-radius:8px;">${j.time.split(' ')[0]}: ${j.text.slice(0, 50)}${j.text.length > 50 ? '...' : ''}</div>`).join('') : ''}
+  </div>`;
+}
+
 async function refreshNews() {
   const list = $('newsList');
   if (list) list.innerHTML = '<div class="card"><p style="text-align:center;color:#999;">加载中...</p></div>';
@@ -695,6 +826,7 @@ function init() {
   renderMiniStocks();
   renderMiniNews();
   renderTodos();
+  renderHabits();
   renderJournals();
   const initial = location.hash.replace('#','') || 'today';
   if (['today','stocks','manifest','news','bobo','journal'].includes(initial)) switchTab(initial);
