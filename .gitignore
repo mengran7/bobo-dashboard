@@ -1,0 +1,6 @@
+cloudflared.exe
+start-tunnel.bat
+news-cache.json
+stock-cache.json
+state.json
+*.log

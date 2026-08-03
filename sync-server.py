@@ -1,7 +1,7 @@
 import json, os, urllib.request, xml.etree.ElementTree as ET
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-DIR = r'C:\Users\boyi0\Desktop\Bobo华文'
+DIR = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(DIR, 'state.json')
 STOCK_CACHE = os.path.join(DIR, 'stock-cache.json')
 
