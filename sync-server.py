@@ -32,6 +32,11 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        if self.path == '/':
+            self.send_response(302)
+            self.send_header('Location', '/dashboard.html')
+            self.end_headers()
+            return
         if self.path == '/api/state':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
