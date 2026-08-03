@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>互动小页面</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+    min-height: 100vh;
+    color: #333;
+    padding: 14px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+  .header p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #666;
+  }
+  .score-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .score-item {
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(6px);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+  }
+  .score-item strong {
+    color: #6c5ce7;
+    font-size: 16px;
+  }
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 10px;
+    border-radius: 12px;
+    border: none;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+    transition: all .15s;
+  }
+  .tab:active { transform: scale(0.97); }
+  .tab.active {
+    background: #6c5ce7;
+    color: white;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.1);
+  }
+  .panel { display: none; animation: fadeIn .25s; }
+  .panel.show { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+  }
+  .card h3 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    color: #444;
+  }
+  .btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    background: #6c5ce7;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+    transition: all .15s;
+  }
+  .btn:active { transform: scale(0.96); box-shadow: 0 1px 0 rgba(0,0,0,0.1); }
+  .btn.green { background: #00b894; }
+  .btn.red { background: #ff6b6b; }
+
+  .option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    border: 2px solid #dfe6e9;
+    background: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .option:active { transform: scale(0.98); }
+  .option.correct { background: #55efc4; border-color: #00b894; color: #006644; }
+  .option.wrong { background: #ff7675; border-color: #d63031; color: white; }
+
+  .feedback {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    font-size: 14px;
+    min-height: 40px;
+  }
+  .feedback.ok { background: #e6fff5; color: #006644; }
+  .feedback.fail { background: #ffeaea; color: #a71d2a; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+  }
+  .grid-item {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 14px;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+    user-select: none;
+    transition: transform .1s;
+  }
+  .grid-item:active { transform: scale(0.9); }
+  .grid-item.revealed { background: #dfe6e9; }
+
+  .toast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-120px);
+    background: #2d3436;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform .3s;
+    z-index: 99;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>互动小页面</h1>
+  <p>手机 Safari 测试模板 · 点一点试试</p>
+</div>
+
+<div class="score-bar">
+  <div class="score-item">得分 <strong id="score">0</strong></div>
+  <div class="score-item">连击 <strong id="combo">0</strong></div>
+  <div class="score-item">最高连击 <strong id="best">0</strong></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="quiz">选择题</button>
+  <button class="tab" data-tab="memory">记忆翻牌</button>
+  <button class="tab" data-tab="counter">点击器</button>
+</div>
+
+<!-- ====== 选择题 ====== -->
+<div class="panel show" id="panel-quiz">
+  <div class="card">
+    <h3>📝 题目</h3>
+    <p id="question" style="font-size:16px;margin:0 0 12px;">加载中...</p>
+    <div id="choices"></div>
+    <div class="feedback" id="quiz-feedback" style="display:none;"></div>
+    <div style="margin-top:10px;">
+      <button class="btn green" onclick="nextQuestion()">下一题</button>
+      <button class="btn red" onclick="resetAll()">重置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 记忆翻牌 ====== -->
+<div class="panel" id="panel-memory">
+  <div class="card">
+    <h3>🧠 翻牌配对</h3>
+    <p style="font-size:13px;color:#666;margin:0 0 10px;">找出相同 emoji 的牌，越快越好</p>
+    <div class="grid" id="memory-grid"></div>
+    <div class="feedback" id="memory-feedback" style="display:none;"></div>
+    <div style="margin-top:10px;">
+      <button class="btn" onclick="initMemory()">重新开始</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 点击器 ====== -->
+<div class="panel" id="panel-counter">
+  <div class="card" style="text-align:center;">
+    <h3>👆 快速点击</h3>
+    <p style="font-size:13px;color:#666;margin:0 0 10px;">10 秒内狂点按钮</p>
+    <div style="font-size:48px;font-weight:bold;color:#6c5ce7;" id="counter-display">0</div>
+    <div style="font-size:13px;color:#888;margin:4px 0 14px;">剩余 <span id="timer">10</span> 秒</div>
+    <button class="btn" id="tap-btn" ontouchstart="tap(event)" onmousedown="tap(event)">点我！</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ====== 状态 ======
+  let score = 0, combo = 0, best = 0;
+
+  function updateScore(n) {
+    score += n;
+    if (n > 0) { combo++; best = Math.max(best, combo); }
+    else { combo = 0; }
+    document.getElementById('score').textContent = score;
+    document.getElementById('combo').textContent = combo;
+    document.getElementById('best').textContent = best;
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  // ====== Tab 切换 ======
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('show');
+    });
+  });
+
+  // ====== 选择题 ======
+  const quizData = [
+    { q: "“春天”一共有几个字？", choices: ["2", "3", "4", "5"], a: 1, explain: "春-天，共 2 个字。" },
+    { q: "以下哪个是水果？", choices: ["胡萝卜", "苹果", "白菜", "米饭"], a: 1, explain: "苹果是水果。" },
+    { q: "1 + 2 = ?", choices: ["2", "3", "4", "5"], a: 1, explain: "1 + 2 = 3。" },
+    { q: "太阳从哪个方向升起？", choices: ["西边", "南边", "东边", "北边"], a: 2, explain: "太阳从东边升起。" },
+    { q: "以下哪个是动物？", choices: ["花朵", "小鸟", "云朵", "石头"], a: 1, explain: "小鸟是动物。" },
+    { q: "一个星期有几天？", choices: ["5", "6", "7", "8"], a: 2, explain: "一个星期有 7 天。" },
+    { q: "水的颜色是什么？", choices: ["红色", "蓝色", "黄色", "绿色"], a: 1, explain: "清澈的水是透明无色的，但在题目选项中选蓝色最接近。" },
+    { q: "以下哪个是礼貌用语？", choices: ["你好", "讨厌", "走开", "吵死"], a: 0, explain: "“你好”是礼貌用语。" },
+  ];
+  let qi = 0;
+  function renderQuiz() {
+    const q = quizData[qi];
+    document.getElementById('question').textContent = `${qi+1}. ${q.q}`;
+    const c = document.getElementById('choices');
+    c.innerHTML = '';
+    q.choices.forEach((ch, i) => {
+      const b = document.createElement('button');
+      b.className = 'option';
+      b.textContent = ch;
+      b.onclick = () => pickQuiz(i);
+      c.appendChild(b);
+    });
+    const fb = document.getElementById('quiz-feedback');
+    fb.style.display = 'none'; fb.className = 'feedback';
+  }
+  function pickQuiz(i) {
+    const q = quizData[qi], fb = document.getElementById('quiz-feedback');
+    const opts = document.querySelectorAll('#choices .option');
+    opts.forEach(o => o.disabled = true);
+    if (i === q.a) {
+      opts[i].classList.add('correct');
+      fb.textContent = '✅ 对！' + q.explain;
+      fb.classList.add('ok');
+      updateScore(10);
+    } else {
+      opts[i].classList.add('wrong');
+      opts[q.a].classList.add('correct');
+      fb.textContent = '❌ 选错了。' + q.explain;
+      fb.classList.add('fail');
+      updateScore(-3);
+    }
+    fb.style.display = 'block';
+  }
+  function nextQuestion() {
+    qi = (qi + 1) % quizData.length;
+    renderQuiz();
+  }
+  renderQuiz();
+
+  // ====== 记忆翻牌 ======
+  const emojis = ['🐶','🐱','🐰','🐸','🍎','🍌','⭐','🌈'];
+  let memCards = [], memOpen = [], memMatched = 0, memLock = false;
+  function initMemory() {
+    memCards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+    memOpen = []; memMatched = 0; memLock = false;
+    const g = document.getElementById('memory-grid');
+    g.innerHTML = '';
+    memCards.forEach((e, i) => {
+      const d = document.createElement('div');
+      d.className = 'grid-item';
+      d.dataset.index = i;
+      d.dataset.emoji = e;
+      d.textContent = '?';
+      d.onclick = () => flipCard(d, i);
+      g.appendChild(d);
+    });
+    document.getElementById('memory-feedback').style.display = 'none';
+  }
+  function flipCard(el, i) {
+    if (memLock || memOpen.includes(i) || el.classList.contains('revealed')) return;
+    el.textContent = memCards[i];
+    el.classList.add('revealed');
+    memOpen.push(i);
+    if (memOpen.length === 2) {
+      memLock = true;
+      const [a, b] = memOpen;
+      if (memCards[a] === memCards[b]) {
+        memMatched++;
+        showToast('🎉 配对成功');
+        updateScore(15);
+        memOpen = []; memLock = false;
+        if (memMatched === emojis.length) {
+          const fb = document.getElementById('memory-feedback');
+          fb.textContent = `🏆 全部完成！共 +${emojis.length * 15} 分`;
+          fb.className = 'feedback ok'; fb.style.display = 'block';
+        }
+      } else {
+        setTimeout(() => {
+          document.querySelectorAll('#memory-grid .grid-item')[a].textContent = '?';
+          document.querySelectorAll('#memory-grid .grid-item')[a].classList.remove('revealed');
+          document.querySelectorAll('#memory-grid .grid-item')[b].textContent = '?';
+          document.querySelectorAll('#memory-grid .grid-item')[b].classList.remove('revealed');
+          memOpen = []; memLock = false;
+        }, 700);
+      }
+    }
+  }
+  initMemory();
+
+  // ====== 点击器 ======
+  let ccount = 0, left = 10, tick = null;
+  function tap(e) {
+    if (left <= 0) return;
+    e.preventDefault();
+    ccount++;
+    document.getElementById('counter-display').textContent = ccount;
+    const btn = document.getElementById('tap-btn');
+    btn.style.transform = 'scale(0.9)';
+    setTimeout(() => btn.style.transform = '', 80);
+  }
+  function startTap() {
+    if (tick) return;
+    ccount = 0; left = 10;
+    document.getElementById('counter-display').textContent = '0';
+    document.getElementById('timer').textContent = '10';
+    document.getElementById('tap-btn').disabled = false;
+    tick = setInterval(() => {
+      left--;
+      document.getElementById('timer').textContent = Math.max(left, 0);
+      if (left <= 0) {
+        clearInterval(tick); tick = null;
+        document.getElementById('tap-btn').disabled = true;
+        showToast(`⏰ 时间到！你点了 ${ccount} 次`);
+        updateScore(ccount);
+      }
+    }, 1000);
+  }
+  startTap();
+
+  // ====== 重置 ======
+  function resetAll() {
+    score = 0; combo = 0; best = 0;
+    document.getElementById('score').textContent = '0';
+    document.getElementById('combo').textContent = '0';
+    document.getElementById('best').textContent = '0';
+    qi = 0; renderQuiz();
+    initMemory();
+    startTap();
+    showToast('🔄 已重置');
+  }
+</script>
+
+</body>
+</html>

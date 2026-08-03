@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bobo Math Planet 🌟 P2–P3</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #e8f5e9, #fff3e0);
+    min-height: 100vh;
+    color: #333;
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10;
+    border-bottom: 1px solid rgba(0,0,0,0.06); flex-wrap: wrap; gap: 10px;
+  }
+  .topbar h1 { margin: 0; font-size: 20px; }
+  .topbar .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge {
+    color: white; padding: 5px 12px; border-radius: 999px;
+    font-size: 13px; box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  }
+  .badge.red { background: #ff6b6b; }
+  .badge.blue { background: #0984e3; }
+  .badge.green { background: #00b894; }
+  .badge.orange { background: #e17055; }
+  .container { padding: 14px; max-width: 1200px; margin: 0 auto; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tab {
+    padding: 9px 14px; border-radius: 12px; border: none;
+    background: white; font-size: 14px; cursor: pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.05); transition: transform .1s;
+  }
+  .tab:hover { transform: translateY(-1px); }
+  .tab.active { background: #6c5ce7; color: white; }
+  .panel { display: none; animation: fadeIn .2s; }
+  .panel.show { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;
+  }
+  .card {
+    background: white; border-radius: 14px; padding: 12px; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05); transition: transform .1s;
+    text-align: center;
+  }
+  .card:active { transform: translateY(2px); }
+  .card .emoji { font-size: 36px; }
+  .card .title { font-size: 14px; font-weight: bold; margin-top: 4px; }
+  .card .meta { font-size: 11px; color: #636e72; margin-top: 2px; }
+  .progress {
+    background: white; border-radius: 14px; padding: 14px; margin-bottom: 14px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+  }
+  .progress h3 { margin: 0 0 8px; font-size: 16px; }
+  .bar-wrap { background: #dfe6e9; border-radius: 999px; height: 12px; overflow: hidden; }
+  .bar { height: 100%; background: linear-gradient(90deg,#00b894,#0984e3); width: 0%; transition: width .3s; }
+  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .stat { flex: 1; min-width: 80px; background: #f8f9fa; border-radius: 10px; padding: 8px; text-align: center; }
+  .stat .num { font-size: 20px; font-weight: bold; }
+  .stat .lbl { font-size: 11px; color: #636e72; }
+  .quiz {
+    background: white; border-radius: 14px; padding: 16px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05); max-width: 700px; margin: 0 auto;
+  }
+  .quiz .q { font-size: 20px; margin-bottom: 10px; line-height: 1.5; }
+  .quiz .choices { display: grid; gap: 8px; }
+  .quiz .choice {
+    padding: 10px 12px; border-radius: 10px; border: 2px solid #dfe6e9;
+    background: white; font-size: 16px; cursor: pointer; text-align: left;
+  }
+  .quiz .choice:hover { border-color: #6c5ce7; }
+  .quiz .choice.correct { background: #55efc4; border-color: #00b894; }
+  .quiz .choice.wrong { background: #ff7675; border-color: #d63031; color: white; }
+  .quiz .feedback { margin-top: 12px; font-size: 15px; min-height: 22px; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 12px; border: none; border-radius: 10px; cursor: pointer;
+    background: #6c5ce7; color: white; font-size: 13px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+  }
+  .btn.secondary { background: #b2bec3; }
+  .btn.green { background: #00b894; }
+  .section {
+    background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+  }
+  .section h3 { margin: 0 0 10px; font-size: 16px; }
+  .problem {
+    padding: 12px; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px;
+  }
+  .problem .stem { font-size: 15px; margin-bottom: 8px; line-height: 1.6; }
+  .answer-slot {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  }
+  .answer-slot input {
+    flex: 1; min-width: 120px; padding: 7px 9px; border-radius: 8px;
+    border: 2px solid #dfe6e9; font-size: 15px;
+  }
+  .answer-slot input.correct { border-color: #00b894; background: #e6fff7; }
+  .answer-slot input.wrong { border-color: #d63031; background: #ffeaea; }
+  .stars { font-size: 20px; letter-spacing: 3px; }
+  .level-tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .level-tab {
+    padding: 6px 14px; border-radius: 999px; border: 2px solid #dfe6e9;
+    background: white; font-size: 13px; cursor: pointer;
+  }
+  .level-tab.active { background: #6c5ce7; color: white; border-color: #6c5ce7; }
+  .empty { color: #999; padding: 10px 0; }
+  .tag {
+    font-size: 10px; padding: 2px 7px; border-radius: 999px;
+    background: #dfe6e9; color: #2d3436; display: inline-block; margin: 2px;
+  }
+  .tag.write { background: #ffeaa7; }
+  .tag.done { background: #55efc4; color: #006644; }
+  .tag.weak { background: #fab1a0; }
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+  .filter-bar label { font-size: 13px; color: #636e72; }
+  .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .topic-card {
+    background: white; border-radius: 14px; padding: 14px; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05); text-align: center;
+  }
+  .topic-card:hover { transform: translateY(-2px); }
+  .topic-card .icon { font-size: 40px; }
+  .topic-card .name { font-size: 14px; font-weight: bold; margin-top: 6px; }
+  .topic-card .sub { font-size: 11px; color: #636e72; margin-top: 2px; }
+  .topic-detail {
+    background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+  }
+  .topic-detail .back {
+    display: inline-block; margin-bottom: 10px; padding: 6px 10px;
+    border-radius: 10px; border: 2px solid #dfe6e9; background: white; cursor: pointer; font-size: 13px;
+  }
+  .topic-detail .back:hover { border-color: #6c5ce7; }
+  .checklist { list-style: none; padding: 0; margin: 10px 0; }
+  .checklist li {
+    padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    background: #f8f9fa; border: 2px solid transparent; font-size: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .checklist li:hover { border-color: #6c5ce7; }
+  .checklist li.checked { background: #e6fff7; border-color: #00b894; text-decoration: line-through; color: #636e72; }
+  .checklist .check-box {
+    width: 20px; height: 20px; border-radius: 6px; border: 2px solid #dfe6e9;
+    background: white; flex-shrink: 0; margin-top: 1px;
+  }
+  .checklist li.checked .check-box { background: #00b894; border-color: #00b894; }
+  .checklist .check-text { flex: 1; }
+  .checklist .check-label { font-size: 11px; color: #636e72; display: block; margin-top: 2px; }
+  .detail-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .difficulty-bar { display: flex; gap: 4px; margin-top: 6px; justify-content: center; }
+  .difficulty-dot { width: 10px; height: 10px; border-radius: 50%; background: #dfe6e9; }
+  .difficulty-dot.active.easy { background: #00b894; }
+  .difficulty-dot.active.medium { background: #fdcb6e; }
+  .difficulty-dot.active.hard { background: #ff7675; }
+  .mode-select { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>🌟 Bobo Math Planet · P2–P3</h1>
+  <div class="meta">
+    <div style="display:flex;gap:6px;">
+      <button class="level-tab active" id="globalLevel2" onclick="setLevel(2)" style="font-size:12px;">Primary 2</button>
+      <button class="level-tab" id="globalLevel3" onclick="setLevel(3)" style="font-size:12px;">Primary 3</button>
+      <button class="level-tab" id="globalLevelM" onclick="setLevel('mixed')" style="font-size:12px;">Mixed</button>
+    </div>
+    <div class="badge green" id="streakBadge">🔥 0 days</div>
+    <div class="badge red" id="starBadge">⭐ 0</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="learn">📚 Topics</button>
+    <button class="tab" data-tab="practice">✏️ Practice</button>
+    <button class="tab" data-tab="wordprob">📖 Word Problems</button>
+    <button class="tab" data-tab="olympiad">🏆 Olympiad</button>
+    <button class="tab" data-tab="errors">🩹 Mistakes</button>
+    <button class="tab" data-tab="progress">📈 Progress</button>
+  </div>
+
+  <!-- Topics -->
+  <div id="learn" class="panel show">
+    <div class="progress">
+      <h3 id="learnTitle">Primary 2 Topics</h3>
+      <div class="bar-wrap"><div class="bar" id="topicBar"></div></div>
+      <div class="stats">
+        <div class="stat"><div class="num" id="statTopics">0/0</div><div class="lbl">Topics</div></div>
+        <div class="stat"><div class="num" id="statPractice">0</div><div class="lbl">Practiced</div></div>
+        <div class="stat"><div class="num" id="statOlympiad">0</div><div class="lbl">Olympiad done</div></div>
+        <div class="stat"><div class="num" id="statDays">0</div><div class="lbl">Days</div></div>
+      </div>
+    </div>
+    <div id="topicList"></div>
+    <div id="topicDetail" style="display:none;"></div>
+  </div>
+
+  <!-- Practice -->
+  <div id="practice" class="panel">
+    <div class="section">
+      <h3>✏️ Choose a Topic</h3>
+      <div class="topic-grid" id="practiceGrid"></div>
+    </div>
+    <div id="practiceArea" style="display:none;">
+      <div class="quiz" id="practiceBox">
+        <div class="q" id="practiceQ"></div>
+        <div class="choices" id="practiceChoices"></div>
+        <div class="answer-slot" id="practiceInput" style="display:none;"></div>
+        <div class="feedback" id="practiceFeedback"></div>
+        <div class="actions">
+          <button class="btn" onclick="nextPractice()">Next</button>
+          <button class="btn secondary" onclick="resetPractice()">Reset</button>
+          <button class="btn secondary" onclick="exitPractice()">Exit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Word Problems -->
+  <div id="wordprob" class="panel">
+    <div class="section">
+      <h3>📖 Word Problem Practice</h3>
+      <p style="font-size:13px;color:#636e72;margin:0 0 10px;">Read carefully, write the full answer or number sentence.</p>
+      <div class="mode-select">
+        <button class="btn secondary" onclick="setWordMode('p2')" id="wpModeP2" style="font-size:12px;">P2 Level</button>
+        <button class="btn secondary" onclick="setWordMode('p3')" id="wpModeP3" style="font-size:12px;">P3 Level</button>
+        <button class="btn secondary" onclick="setWordMode('mixed')" id="wpModeMixed" style="font-size:12px;">Mixed</button>
+      </div>
+    </div>
+    <div class="quiz" id="wordProbBox">
+      <div class="q" id="wordProbQ">Press Start to begin!</div>
+      <div class="choices" id="wordProbChoices"></div>
+      <div class="answer-slot" id="wordProbInput" style="display:none;"></div>
+      <div class="feedback" id="wordProbFeedback"></div>
+      <div class="actions">
+        <button class="btn green" onclick="startWordProb()">Start</button>
+        <button class="btn secondary" onclick="resetWordProb()" style="display:none;" id="wpReset">Reset</button>
+        <button class="btn" onclick="nextWordProb()" style="display:none;" id="wpNext">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Olympiad -->
+  <div id="olympiad" class="panel">
+    <div class="quiz" id="olympiadStart">
+      <div style="text-align:center;margin-bottom:10px;">
+        <span style="font-size:40px;">🏆</span>
+        <h3 style="margin:8px 0;">Math Olympiad Challenge</h3>
+        <p style="color:#636e72;font-size:13px;">20 questions, easy → hard. Hints available.</p>
+        <div class="difficulty-bar" style="justify-content:center;margin-top:10px;">
+          <span class="difficulty-dot active easy"></span>
+          <span class="difficulty-dot active medium"></span>
+          <span class="difficulty-dot active hard"></span>
+        </div>
+      </div>
+      <div class="actions" style="justify-content:center;">
+        <button class="btn green" onclick="startOlympiad()">Start Challenge</button>
+      </div>
+    </div>
+    <div id="olympiadArea" style="display:none;">
+      <div class="quiz">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-size:13px;color:#636e72;" id="olympiadProgress">1/20</span>
+          <span style="font-size:13px;color:#6c5ce7;" id="olympiadScore">Score: 0</span>
+          <span style="font-size:12px;color:#636e72;" id="olympiadDiff">Easy</span>
+        </div>
+        <div class="q" id="olympiadQ"></div>
+        <div class="choices" id="olympiadChoices"></div>
+        <div class="answer-slot" id="olympiadInput" style="display:none;"></div>
+        <div class="feedback" id="olympiadFeedback"></div>
+        <div class="actions">
+          <button class="btn secondary" onclick="olympiadHint()">💡 Hint</button>
+          <button class="btn" onclick="nextOlympiad()">Next</button>
+          <button class="btn secondary" onclick="resetOlympiad()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mistakes -->
+  <div id="errors" class="panel">
+    <div class="progress">
+      <h3>🩹 Mistake Notebook</h3>
+      <div class="filter-bar">
+        <label>Type:</label>
+        <select id="errorFilter" onchange="renderErrors()">
+          <option value="all">All</option>
+          <option value="calc">Calculation</option>
+          <option value="word">Word Problem</option>
+          <option value="concept">Concept</option>
+          <option value="olympiad">Olympiad</option>
+        </select>
+        <button class="btn secondary" onclick="clearErrors()" style="font-size:12px;">Clear All</button>
+      </div>
+      <div id="errorList"></div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div id="progress" class="panel">
+    <div class="progress">
+      <h3>Sticker Wall 🏅</h3>
+      <div class="stars" id="starWall">No stickers yet. Keep learning!</div>
+    </div>
+    <div class="progress">
+      <h3>Mastered Topics</h3>
+      <div class="grid" id="masteredGrid"></div>
+    </div>
+    <div class="progress">
+      <h3>Review These</h3>
+      <div class="grid" id="weakGrid"></div>
+    </div>
+    <div class="progress">
+      <h3>This Week</h3>
+      <div class="stats" id="weeklyStats"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const DATA = {
+  topics: {
+    2: [
+      {id:"p2-num", name:"Numbers 1-1000", icon:"🔢", sub:"Place value, compare, order"},
+      {id:"p2-add", name:"Addition", icon:"➕", sub:"Up to 1000, with carry"},
+      {id:"p2-sub", name:"Subtraction", icon:"➖", sub:"Up to 1000, with borrow"},
+      {id:"p2-mul", name:"Multiplication", icon:"✖️", sub:"Tables 2-9"},
+      {id:"p2-div", name:"Division", icon:"➗", sub:"With remainder"},
+      {id:"p2-frac", name:"Fractions", icon:"🍕", sub:" halves, quarters, thirds"},
+      {id:"p2-length", name:"Length", icon:"📏", sub:"cm, m"},
+      {id:"p2-mass", name:"Mass", icon:"⚖️", sub:"g, kg"},
+      {id:"p2-time", name:"Time", icon:"🕐", sub:"Hours, minutes"},
+      {id:"p2-shape", name:"Shapes", icon:"📐", sub:"2D/3D, symmetry"},
+      {id:"p2-pattern", name:"Patterns", icon:"🔁", sub:"Number & shape"},
+      {id:"p2-money", name:"Money", icon:"💵", sub:"Change, shopping"}
+    ],
+    3: [
+      {id:"p3-num", name:"Numbers to 10,000", icon:"🔢", sub:"Place value, rounding"},
+      {id:"p3-addsub", name:"Add/Subtract", icon:"➕➖", sub:"Up to 10,000"},
+      {id:"p3-mul", name:"Multiplication", icon:"✖️", sub:"2-digit × 1-digit"},
+      {id:"p3-div", name:"Division", icon:"➗", sub:"With remainder"},
+      {id:"p3-frac", name:"Fractions", icon:"🍕", sub:"Equivalent, mixed"},
+      {id:"p3-decimal", name:"Decimals", icon:"💠", sub:"Tenths"},
+      {id:"p3-time", name:"Time", icon:"🕐", sub:"12-hour, 24-hour"},
+      {id:"p3-perim", name:"Perimeter", icon:"📏", sub:"Rectilinear shapes"},
+      {id:"p3-area", name:"Area", icon:"🟦", sub:"Square units"},
+      {id:"p3-angle", name:"Angles", icon:"📐", sub:"Right, acute, obtuse"},
+      {id:"p3-bar", name:"Bar Graphs", icon:"📊", sub:"Read & draw"},
+      {id:"p3-line", name:"Line Symmetry", icon:"↔️", sub:"Identify, complete"}
+    ]
+  },
+  checklists: {
+    "p2-num": [
+      {text:"Read and write numbers to 1000", label:"Must be fluent"},
+      {text:"Compare numbers using >, <, =", label:"Must be fluent"},
+      {text:"Count in 2s, 5s, 10s", label:"Practice"},
+      {text:"Find 1 more / 1 less quickly", label:"Practice"},
+      {text:"Place value: hundreds, tens, ones", label:"Must be fluent"}
+    ],
+    "p2-add": [
+      {text:"Add 2-digit numbers without carry", label:"Must be fluent"},
+      {text:"Add 2-digit numbers with carry", label:"Must be fluent"},
+      {text:"Add 3-digit numbers with carry", label:"Practice"},
+      {text:"Use number bonds and mental math", label:"Practice"},
+      {text:"Solve word problems with addition", label:"Must be fluent"}
+    ],
+    "p2-sub": [
+      {text:"Subtract 2-digit numbers without borrow", label:"Must be fluent"},
+      {text:"Subtract 2-digit numbers with borrow", label:"Must be fluent"},
+      {text:"Subtract 3-digit numbers with borrow", label:"Practice"},
+      {text:"Check answer using addition", label:"Practice"},
+      {text:"Solve word problems with subtraction", label:"Must be fluent"}
+    ],
+    "p2-mul": [
+      {text:"Recall 2, 3, 4, 5 times tables", label:"Must be fluent"},
+      {text:"Use x symbol correctly", label:"Must be fluent"},
+      {text:"Multiply by 0 and 1", label:"Practice"},
+      {text:"Skip counting", label:"Practice"},
+      {text:"Solve multiplication word problems", label:"Must be fluent"}
+    ],
+    "p2-div": [
+      {text:"Share equally into groups", label:"Must be fluent"},
+      {text:"Use ÷ symbol correctly", label:"Must be fluent"},
+      {text:"Understand dividend, divisor, quotient", label:"Practice"},
+      {text:"Division with remainder", label:"Practice"},
+      {text:"Solve division word problems", label:"Must be fluent"}
+    ],
+    "p2-frac": [
+      {text:"Name unit fractions: 1/2, 1/3, 1/4", label:"Must be fluent"},
+      {text:"Shade fractions of shapes", label:"Practice"},
+      {text:"Compare fractions with same denominator", label:"Practice"},
+      {text:"Add fractions with same denominator", label:"Practice"},
+      {text:"Fraction of a set", label:"Practice"}
+    ],
+    "p2-length": [
+      {text:"Measure in cm using ruler", label:"Must be fluent"},
+      {text:"Compare lengths using cm/m", label:"Practice"},
+      {text:"Estimate lengths", label:"Practice"},
+      {text:"1 m = 100 cm", label:"Must be fluent"}
+    ],
+    "p2-mass": [
+      {text:"Measure in g and kg", label:"Must be fluent"},
+      {text:"Compare masses", label:"Practice"},
+      {text:"1 kg = 1000 g", label:"Must be fluent"},
+      {text:"Choose correct unit: g or kg", label:"Practice"}
+    ],
+    "p2-time": [
+      {text:"Tell time to 5 minutes", label:"Must be fluent"},
+      {text:"Draw clock hands", label:"Practice"},
+      {text:"Use a.m. and p.m.", label:"Practice"},
+      {text:"Find duration between two times", label:"Practice"}
+    ],
+    "p2-shape": [
+      {text:"Name 2D shapes and properties", label:"Must be fluent"},
+      {text:"Name 3D shapes and properties", label:"Must be fluent"},
+      {text:"Identify flat/curved faces", label:"Practice"},
+      {text:"Recognise symmetry", label:"Practice"}
+    ],
+    "p2-pattern": [
+      {text:"Continue number patterns", label:"Must be fluent"},
+      {text:"Describe the rule", label:"Practice"},
+      {text:"Continue shape patterns", label:"Practice"}
+    ],
+    "p2-money": [
+      {text:"Count dollars and cents", label:"Must be fluent"},
+      {text:"Convert cents to dollars", label:"Practice"},
+      {text:"Give change", label:"Must be fluent"},
+      {text:"Solve money word problems", label:"Must be fluent"}
+    ],
+    "p3-num": [
+      {text:"Read and write numbers to 10,000", label:"Must be fluent"},
+      {text:"Place value: ten thousands, thousands, hundreds, tens, ones", label:"Must be fluent"},
+      {text:"Compare and order numbers", label:"Practice"},
+      {text:"Round to nearest 10/100/1000", label:"Practice"},
+      {text:"Number patterns", label:"Practice"}
+    ],
+    "p3-addsub": [
+      {text:"Add 4-digit numbers with carry", label:"Must be fluent"},
+      {text:"Subtract 4-digit numbers with borrow", label:"Must be fluent"},
+      {text:"Mental addition/subtraction", label:"Practice"},
+      {text:"Solve 2-step word problems", label:"Must be fluent"}
+    ],
+    "p3-mul": [
+      {text:"Multiply 2-digit × 1-digit with carry", label:"Must be fluent"},
+      {text:"Multiply without carry", label:"Practice"},
+      {text:"Multiply by 10 and 100", label:"Practice"},
+      {text:"Solve multiplication word problems", label:"Must be fluent"}
+    ],
+    "p3-div": [
+      {text:"Divide with remainder", label:"Must be fluent"},
+      {text:"Divide 3-digit by 1-digit", label:"Practice"},
+      {text:"Interpret quotient and remainder in word problems", label:"Must be fluent"}
+    ],
+    "p3-frac": [
+      {text:"Equivalent fractions", label:"Must be fluent"},
+      {text:"Simplify fractions", label:"Practice"},
+      {text:"Compare unlike fractions", label:"Practice"},
+      {text:"Mixed numbers and improper fractions", label:"Practice"},
+      {text:"Add/subtract fractions with unlike denominators", label:"Practice"}
+    ],
+    "p3-decimal": [
+      {text:"Read and write decimals to 1 decimal place", label:"Must be fluent"},
+      {text:"Compare decimals", label:"Practice"},
+      {text:"Add/subtract decimals", label:"Practice"},
+      {text:"Convert fractions to decimals (halves, quarters, tenths)", label:"Practice"}
+    ],
+    "p3-time": [
+      {text:"Read 24-hour clock", label:"Must be fluent"},
+      {text:"Convert between 12-hour and 24-hour", label:"Practice"},
+      {text:"Find duration in hours and minutes", label:"Practice"},
+      {text:"Start/end time word problems", label:"Must be fluent"}
+    ],
+    "p3-perim": [
+      {text:"Perimeter of rectangle and square", label:"Must be fluent"},
+      {text:"Perimeter of rectilinear shapes", label:"Practice"},
+      {text:"Find missing side given perimeter", label:"Practice"}
+    ],
+    "p3-area": [
+      {text:"Area by counting squares", label:"Must be fluent"},
+      {text:"Area of rectangle = length × width", label:"Must be fluent"},
+      {text:"Compare areas", label:"Practice"}
+    ],
+    "p3-angle": [
+      {text:"Identify right, acute, obtuse angles", label:"Must be fluent"},
+      {text:"Draw angles", label:"Practice"},
+      {text:"Angle properties of shapes", label:"Practice"}
+    ],
+    "p3-bar": [
+      {text:"Read bar graphs", label:"Must be fluent"},
+      {text:"Answer questions from bar graphs", label:"Must be fluent"},
+      {text:"Complete bar graphs from data", label:"Practice"}
+    ],
+    "p3-line": [
+      {text:"Identify lines of symmetry", label:"Must be fluent"},
+      {text:"Complete symmetrical shapes", label:"Practice"},
+      {text:"Symmetry in letters and shapes", label:"Practice"}
+    ]
+  },
+  problems: {
+    "p2-num": genP2Num, "p2-add": genP2Add, "p2-sub": genP2Sub,
+    "p2-mul": genP2Mul, "p2-div": genP2Div, "p2-frac": genP2Frac,
+    "p2-length": genP2Length, "p2-mass": genP2Mass, "p2-time": genP2Time,
+    "p2-shape": genP2Shape, "p2-pattern": genP2Pattern, "p2-money": genP2Money,
+    "p3-num": genP3Num, "p3-addsub": genP3AddSub, "p3-mul": genP3Mul,
+    "p3-div": genP3Div, "p3-frac": genP3Frac, "p3-decimal": genP3Decimal,
+    "p3-time": genP3Time, "p3-perim": genP3Perim, "p3-area": genP3Area,
+    "p3-angle": genP3Angle, "p3-bar": genP3Bar, "p3-line": genP3Line
+  },
+  olympiad: [
+    // Easy
+    {q:"1 + 2 + 3 + 4 + 5 = ?", a:15, hints:["Pair 1+5 and 2+4","Each pair is 6","6+6+3=15"], diff:"easy"},
+    {q:"2 + 4 + 6 + 8 = ?", a:20, hints:["These are even numbers","8+2=10, 6+4=10","10+10=20"], diff:"easy"},
+    {q:"5 + 5 + 5 = ?", a:15, hints:["This is repeated addition","5×3=?","5×3=15"], diff:"easy"},
+    {q:"10 − 3 − 2 = ?", a:5, hints:["Take it step by step","10−3=?","7−2=5"], diff:"easy"},
+    {q:"How many sides does a square have?", a:4, hints:["Count the sides","Up, down, left, right","4 sides"], diff:"easy"},
+    {q:"Which number comes next? 2, 4, 6, 8, __", a:10, hints:["Each number goes up by 2","8+2=?"], diff:"easy"},
+    {q:"What is half of 10?", a:5, hints:["Half means divide into 2","10 ÷ 2 = ?"], diff:"easy"},
+    {q:"Mia has 8 stickers. She gives 3 to Bob. How many left?", a:5, hints:["This is subtraction","8−3=?"], diff:"easy"},
+    {q:"A cube has how many faces?", a:6, hints:["Count them: top, bottom, front, back, left, right","6 faces"], diff:"easy"},
+    {q:"Today is Tuesday. What day is tomorrow?", a:"Wednesday", hints:["After Tuesday comes Wednesday"], diff:"easy"},
+    {q:"3 × 4 = ?", a:12, hints:["Count by 3s: 3,6,9,12","Or 4+4+4=12"], diff:"easy"},
+    {q:"How many corners does a rectangle have?", a:4, hints:["A rectangle has 4 corners"], diff:"easy"},
+    // Medium
+    {q:"1 + 3 + 5 + 7 + 9 = ?", a:25, hints:["Pair from both ends","1+9=10, 3+7=10","10+10+5=25"], diff:"medium"},
+    {q:"Find the next number: 3, 6, 9, 12, __", a:15, hints:["This is the 3 times table","12+3=?"], diff:"medium"},
+    {q:"A shopkeeper has 24 apples. He puts 6 apples in each bag. How many bags?", a:4, hints:["This is division","24 ÷ 6 = ?"], diff:"medium"},
+    {q:"Tom is 9 years old. His sister is 4 years younger. How old is she?", a:5, hints:["Younger means subtract","9−4=?"], diff:"medium"},
+    {q:"How many 5-cent coins make 50 cents?", a:10, hints:["50 ÷ 5 = ?","10 coins"], diff:"medium"},
+    {q:"A book costs $12. Amy pays with a $20 note. How much change?", a:8, hints:["Subtract the cost from what she paid","20−12=?"], diff:"medium"},
+    {q:"Fill in: 15, 12, 9, 6, __", a:3, hints:["Each step goes down by 3","6−3=?"], diff:"medium"},
+    {q:"A rectangle is 5 cm long and 3 cm wide. What is its perimeter?", a:"16 cm", hints:["Perimeter = all 4 sides","5+3+5+3=16"], diff:"medium"},
+    {q:"1/2 + 1/2 = ?", a:1, hints:["Two halves make a whole","1/2 + 1/2 = 2/2 = 1"], diff:"medium"},
+    {q:"3 × 7 = ?", a:21, hints:["Count by 3s seven times","Or use 7×3=21"], diff:"medium"},
+    {q:"Which is larger: 3/4 or 2/3?", a:"3/4", hints:["Convert to same denominator","3/4=9/12, 2/3=8/12"], diff:"medium"},
+    {q:"How many minutes in 2 hours?", a:120, hints:["1 hour = 60 minutes","60×2=120"], diff:"medium"},
+    {q:"2, 4, 8, 16, __", a:32, hints:["Each number doubles","16×2=?"], diff:"medium"},
+    // Hard
+    {q:"1 + 2 + 3 + ... + 10 = ?", a:55, hints:["Pair from both ends: 1+10, 2+9...","Each pair is 11","5 pairs × 11 = 55"], diff:"hard"},
+    {q:"There are 4 chickens and rabbits in a pen. There are 10 legs total. How many chickens?", a:3, hints:["Try different numbers","Chickens have 2 legs, rabbits 4","If 3 chickens + 1 rabbit = 6+4=10 legs"], diff:"hard"},
+    {q:"A number multiplied by 3 gives 27. What is the number?", a:9, hints:["Think backwards","27 ÷ 3 = ?"], diff:"hard"},
+    {q:"How many squares are in a 2×2 grid?", a:5, hints:["Count small squares: 4","Count the big one: 1","Total 5"], diff:"hard"},
+    {q:"Find the pattern: 1, 1, 2, 3, 5, 8, __", a:13, hints:["Each number is the sum of the previous two","5+8=13"], diff:"hard"},
+    {q:"A number ÷ 5 = 6 remainder 2. What is the number?", a:32, hints:["Use: divisor × quotient + remainder","5×6+2=?"], diff:"hard"},
+    {q:"What is the largest 3-digit number using digits 7, 2, 5 once?", a:752, hints:["Put largest digit first","7 then 5 then 2"], diff:"hard"},
+    {q:"A shop sells pencils in packs of 4. How many packs for 30 pupils?", a:"7 packs and 2 extra", hints:["30 ÷ 4 = 7 remainder 2","Need 8 packs if one per pupil, but 7 packs + 2 singles = 30"], diff:"hard"},
+    {q:"Find the area of a 6 cm × 4 cm rectangle.", a:"24 cm²", hints:["Area = length × width","6×4=?"], diff:"hard"},
+    {q:"The sum of two consecutive numbers is 11. What are they?", a:"5 and 6", hints:["Try numbers around half of 11","Half of 11 is 5.5","So 5 and 6"], diff:"hard"},
+    {q:"How many lines of symmetry does an equilateral triangle have?", a:3, hints:["An equilateral triangle has 3 identical sides","3 lines of symmetry"], diff:"hard"},
+    {q:"0.3 + 0.5 = ?", a:0.8, hints:["Add the tenths","3 tenths + 5 tenths = 8 tenths"], diff:"hard"},
+    {q:"If ∠ABC = 90° and ∠ABD = 45°, what is ∠DBC?", a:"45°", hints:["90° − 45° = ?","45°"], diff:"hard"},
+    {q:"What is 1/3 of 12?", a:4, hints:["Divide 12 into 3 equal parts","12 ÷ 3 = ?"], diff:"hard"},
+    {q:"Find the missing number: 7 × __ = 56", a:8, hints:["56 ÷ 7 = ?","8"], diff:"hard"},
+    {q:"4 children share 17 sweets equally. How many left over?", a:1, hints:["17 ÷ 4 = 4 remainder ?","4×4=16, so 1 left"], diff:"hard"}
+  ],
+  wordProblems: [
+    // P2 word problems
+    {level:"p2", stem:"Alice has 45 stickers. She buys 28 more. How many stickers does she have now?", a:73, hint:"Addition: 45+28=?", type:"calc"},
+    {level:"p2", stem:"Ben had 62 marbles. He lost 19. How many marbles left?", a:43, hint:"62−19=?", type:"calc"},
+    {level:"p2", stem:"A baker made 96 buns. He sold 54 in the morning. How many buns remain?", a:42, hint:"96−54=?", type:"calc"},
+    {level:"p2", stem:"Each box holds 6 crayons. How many crayons in 7 boxes?", a:42, hint:"6×7=?", type:"calc"},
+    {level:"p2", stem:"32 children go on a trip. Each bus holds 8 children. How many buses needed?", a:4, hint:"32÷8=?", type:"calc"},
+    {level:"p2", stem:"Pencils come in packs of 5. How many packs for 25 pencils?", a:5, hint:"25÷5=?", type:"calc"},
+    {level:"p2", stem:"Mother bought 3 cakes at $4 each. She paid $20. How much change?", a:8, hint:"3×4=12, 20−12=8", type:"word"},
+    {level:"p2", stem:"A rope is 50 cm. I cut off 18 cm. How long is the remaining rope?", a:"32 cm", hint:"50−18=32 cm", type:"word"},
+    {level:"p2", stem:"Tom saves $5 each week. How many weeks to save $35?", a:7, hint:"35÷5=7 weeks", type:"word"},
+    {level:"p2", stem:"A book has 120 pages. Sarah reads 25 pages on Monday and 30 on Tuesday. How many pages left?", a:65, hint:"25+30=55, 120−55=65", type:"word"},
+    {level:"p2", stem:"John is 11 years old. His brother is 3 years older. How old is the brother?", a:14, hint:"11+3=14", type:"word"},
+    {level:"p2", stem:"There are 3 bags. Each bag has 8 oranges. How many oranges total?", a:24, hint:"3×8=24", type:"word"},
+    // P3 word problems
+    {level:"p3", stem:"A school has 1,250 pupils. 578 are boys. How many girls?", a:672, hint:"1250−578=672", type:"calc"},
+    {level:"p3", stem:"A jacket costs $89. Sarah pays $100. How much change?", a:11, hint:"100−89=11", type:"calc"},
+    {level:"p3", stem:"A baker packs 36 muffins into boxes of 6. How many boxes?", a:6, hint:"36÷6=6", type:"calc"},
+    {level:"p3", stem:"A rectangle is 8 cm long and 5 cm wide. What is its perimeter?", a:"26 cm", hint:"2×(8+5)=26 cm", type:"word"},
+    {level:"p3", stem:"A garden is 9 m long and 4 m wide. Find the area.", a:"36 m²", hint:"9×4=36 m²", type:"word"},
+    {level:"p3", stem:"3/4 of a pizza is left. If the pizza had 8 slices, how many slices left?", a:6, hint:"3/4×8=6", type:"word"},
+    {level:"p3", stem:"A train leaves at 9:30 a.m. and arrives at 12:15 p.m. How long is the journey?", a:"2 hours 45 min", hint:"From 9:30 to 12:15", type:"word"},
+    {level:"p3", stem:"If 1/3 of a number is 7, what is the number?", a:21, hint:"? ÷ 3 = 7, so ? = 7×3=21", type:"word"},
+    {level:"p3", stem:"A string is 1.5 m long. I cut off 0.6 m. How much remains?", a:"0.9 m", hint:"1.5−0.6=0.9 m", type:"word"},
+    {level:"p3", stem:"A shop gives 1 free sticker for every $5 spent. How many stickers for $23?", a:4, hint:"23÷5=4 remainder 3, so 4 stickers", type:"word"},
+    {level:"p3", stem:"A number multiplied by 6 is 54. What is the number?", a:9, hint:"54÷6=9", type:"word"},
+    {level:"p3", stem:"A box contains 48 chocolates. They are shared equally among 7 friends. How many left?", a:6, hint:"48÷7=6 remainder 6", type:"word"}
+  ]
+};
+
+// ===== GENERATORS =====
+function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+function genP2Num(){
+  const t=rnd(0,2);
+  if(t===0){ const a=rnd(10,99),b=rnd(1,99),ans=a+b; return {stem:`${a} + ${b} = ?`, a:ans, type:"calc"}; }
+  if(t===1){ const a=rnd(20,99),b=rnd(1,a-1),ans=a-b; return {stem:`${a} - ${b} = ?`, a:ans, type:"calc"}; }
+  const a=rnd(2,9),b=rnd(2,9),ans=a*b; return {stem:`${a} × ${b} = ?`, a:ans, type:"calc"};
+}
+function genP2Add(){ const a=rnd(20,80),b=rnd(20,80),ans=a+b; return {stem:`${a} + ${b} = ?`, a:ans, type:"calc"}; }
+function genP2Sub(){ const a=rnd(30,90),b=rnd(10,a-1),ans=a-b; return {stem:`${a} - ${b} = ?`, a:ans, type:"calc"}; }
+function genP2Mul(){ const a=rnd(2,9),b=rnd(2,9),ans=a*b; return {stem:`${a} × ${b} = ?`, a:ans, type:"calc"}; }
+function genP2Div(){
+  const b=rnd(2,9),ans=rnd(1,10),a=b*ans;
+  const rem=rnd(0,b-1); const realAns=`${ans} R ${rem}`;
+  return {stem:`${a+rem} ÷ ${b} = ? ... remainder?`, a:realAns, type:"calc"};
+}
+function genP2Frac(){
+  const q=[
+    {q:"1/2 + 1/2 = ?",a:"1"},{q:"1/4 of 12 = ?",a:3},{q:"3/4 > 1/2? (yes/no)",a:"yes"},
+    {q:"2/3 of 9 = ?",a:6},{q:"Which is larger: 1/2 or 1/3?",a:"1/2"}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP2Length(){
+  const q=[
+    {q:"1 metre = ? centimetres",a:100},{q:"A pencil is about ? cm",a:"~15-20"},
+    {q:"Which is longer? 1 m or 100 cm",a:"They are equal"}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP2Mass(){
+  const q=[
+    {q:"1 kilogram = ? grams",a:1000},{q:"An apple is about ? grams",a:"~100-200"},
+    {q:"Which is heavier? 500g or 1kg",a:"1kg"}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP2Time(){
+  const hr=rnd(1,12), mn=rnd(0,1)?0:30;
+  const nextHr=hr===12?1:hr+1;
+  const ans=mn===0?`${nextHr}:00`:`${nextHr}:30`;
+  return {stem:`It is ${hr}:${String(mn).padStart(2,'0')}. What time after 30 minutes?`, a:ans, type:"concept"};
+}
+function genP2Shape(){
+  const q=[
+    {q:"How many sides on a pentagon?",a:5},{q:"How many corners on a triangle?",a:3},
+    {q:"A cuboid has how many faces?",a:6},{q:"A sphere has how many corners?",a:0},
+    {q:"Name a shape with 4 equal sides and 4 right angles.",a:"Square"}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP2Pattern(){
+  const t=rnd(0,1);
+  if(t===0){ const d=rnd(1,5),s=rnd(1,9),seq=[s,s+d,s+2*d,s+3*d],a=s+4*d;
+    return {stem:`Pattern: ${seq.join(", ")}, __`, a, type:"concept"}; }
+  const shapes=["○","△","□"],seq=Array.from({length:4},()=>pick(shapes));
+  return {stem:`Shape pattern: ${seq.join(" ")}, next?`, a:"Many possible", type:"concept"};
+}
+function genP2Money(){
+  const price=rnd(2,20),paid=pick([20,50,100]),change=paid-price;
+  return {stem:`Item costs $${price}. Pay $${paid}. Change?`, a:`$${change}`, type:"word"};
+}
+
+function genP3Num(){
+  const t=rnd(0,2);
+  if(t===0){ const a=rnd(100,999),b=rnd(10,999),ans=a+b; return {stem:`${a} + ${b} = ?`, a:ans, type:"calc"}; }
+  if(t===1){ const a=rnd(200,999),b=rnd(10,a-1),ans=a-b; return {stem:`${a} - ${b} = ?`, a:ans, type:"calc"}; }
+  const a=rnd(6,9),b=rnd(3,12),ans=a*b; return {stem:`${a} × ${b} = ?`, a:ans, type:"calc"};
+}
+function genP3AddSub(){
+  const t=rnd(0,1);
+  if(t===0){ const a=rnd(200,900),b=rnd(100,800),ans=a+b; return {stem:`${a} + ${b} = ?`, a:ans, type:"calc"}; }
+  const a=rnd(300,999),b=rnd(100,a-1),ans=a-b; return {stem:`${a} - ${b} = ?`, a:ans, type:"calc"};
+}
+function genP3Mul(){ const a=rnd(6,9),b=rnd(2,12),ans=a*b;
+  return {stem:`${a} × ${b} = ?`, a:ans, type:"calc"}; }
+function genP3Div(){
+  const b=rnd(2,9),ans=rnd(1,20),a=b*ans,rem=rnd(0,b-1),total=a+rem;
+  return {stem:`${total} ÷ ${b} = ? remainder?`, a:`${ans} R ${rem}`, type:"calc"}; }
+function genP3Frac(){
+  const q=[
+    {q:"1/2 = ?/4", a:"2/4"}, {q:"3/6 simplified is?", a:"1/2"},
+    {q:"Which is largest? 1/2, 1/3, 1/4", a:"1/2"}, {q:"2 1/2 + 1/2 = ?", a:"3 or 3/1"},
+    {q:"3/4 of 20 = ?", a:15}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP3Decimal(){
+  const q=[
+    {q:"0.3 + 0.4 = ?", a:0.7}, {q:"0.8 − 0.5 = ?", a:0.3},
+    {q:"Which is larger? 0.6 or 0.59", a:"0.6"}, {q:"2 tenths + 7 tenths = ?", a:"9 tenths or 0.9"}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP3Time(){
+  const t=rnd(0,1);
+  if(t===0){ const d=rnd(1,5),ans=d*60; return {stem:`${d} hours = ? minutes`, a:`${ans} minutes`, type:"calc"}; }
+  return {stem:"3:30 p.m. in 24-hour clock is?", a:"15:30", type:"concept"};
+}
+function genP3Perim(){
+  const q=[
+    {q:"Perimeter of 6cm × 4cm rectangle?", a:"20 cm", hint:"2×(6+4)=20"},
+    {q:"A square has side 5cm. Perimeter?", a:"20 cm", hint:"5×4=20"}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP3Area(){
+  const q=[
+    {q:"Area of 5cm × 3cm rectangle?", a:"15 cm²", hint:"5×3=15 cm²"},
+    {q:"How many 1cm² squares in a 4×3 rectangle?", a:12, hint:"4×3=12"}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP3Angle(){
+  const q=[
+    {q:"A right angle is ? degrees", a:90}, {q:"An acute angle is smaller than ? degrees", a:90},
+    {q:"How many right angles in a square?", a:4}, {q:"A straight line has ? degrees", a:180}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+function genP3Bar(){
+  const cats=["A","B","C"],vals=cats.map(()=>rnd(5,20)),max=Math.max(...vals),top=cats[vals.indexOf(max)];
+  return {stem:`Bar chart: A=${vals[0]}, B=${vals[1]}, C=${vals[2]}. Which is highest?`, a:`Bar ${top}`, type:"concept"};
+}
+function genP3Line(){
+  const q=[
+    {q:"A square has how many lines of symmetry?", a:4},
+    {q:"A rectangle has how many lines of symmetry?", a:2},
+    {q:"An equilateral triangle has how many lines of symmetry?", a:3}
+  ];
+  const x=pick(q); return {stem:x.q, a:x.a, type:"concept"};
+}
+
+// ===== STATE =====
+const LS = {
+  get(k,d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+};
+
+let state = LS.get("bobo_math_en_v2", {
+  stars: 0, days: [], stickers: [], errors: [],
+  mastered: [], currentLevel: 2,
+  practice: { done: [], total: 0 },
+  olympiad: { done: 0, score: 0, total: 0 },
+  practiceTopic: null, wordMode: "mixed",
+  checklist: {}
+});
+
+// clear old storage
+LS.set("bobo_math_en_v1", {
+  stars: 0, days: [], stickers: [], errors: [],
+  mastered: [], currentLevel: 2,
+  practice: { done: [], total: 0 },
+  olympiad: { done: 0, score: 0, total: 0 },
+  practiceTopic: null, wordMode: "mixed",
+  checklist: {}
+});
+
+function save(){ LS.set("bobo_math_en_v2", state); updateUI(); }
+function today(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function addStar(n=1){
+  state.stars += n;
+  const t = today();
+  if(!state.days.includes(t)) state.days.push(t);
+  const st = {date:t, emoji:["⭐","🌟","🎉","🌈","🦄","🍕","🎈","🏆"][Math.floor(Math.random()*8)]};
+  state.stickers.unshift(st);
+  if(state.stickers.length>50) state.stickers = state.stickers.slice(0,50);
+  save();
+}
+function addError(type, text){
+  const e = {type, text, time: new Date().toLocaleString("en-SG", {timeZone:"Asia/Singapore"})};
+  state.errors.unshift(e);
+  if(state.errors.length>200) state.errors = state.errors.slice(0,200);
+  save();
+}
+
+// ===== UI =====
+function updateUI(){
+  document.getElementById("starBadge").textContent = `⭐ ${state.stars}`;
+  document.getElementById("streakBadge").textContent = `🔥 ${state.days.length} days`;
+  const lv = state.currentLevel;
+  const levelLabel = lv==="mixed" ? "Mixed P2-P3" : (lv==2 ? "Primary 2" : "Primary 3");
+  document.getElementById("levelBadge") && (document.getElementById("levelBadge").textContent = levelLabel);
+  document.getElementById("learnTitle").textContent = lv==="mixed" ? "Mixed Topics P2–P3" : (lv==2 ? "Primary 2 Topics" : "Primary 3 Topics");
+
+  ["globalLevel2","globalLevel3","globalLevelM"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const active = (id==="globalLevel2" && lv===2) || (id==="globalLevel3" && lv===3) || (id==="globalLevelM" && lv==="mixed");
+    el.classList.toggle("active", !!active);
+  });
+
+  const topics = lv==="mixed" ? [...DATA.topics[2], ...DATA.topics[3]] : DATA.topics[lv];
+  const prefix = lv==="mixed" ? "" : "p"+lv;
+  document.getElementById("statTopics").textContent = `${state.mastered.filter(t=>!prefix || t.startsWith(prefix)).length}/${topics.length}`;
+  document.getElementById("statPractice").textContent = state.practice.done.length;
+  document.getElementById("statOlympiad").textContent = state.olympiad.done;
+  document.getElementById("statDays").textContent = state.days.length;
+
+  renderTopics();
+  renderPracticeGrid();
+  renderMastered();
+  renderStarWall();
+  renderErrors();
+  renderWeekly();
+  updateWordModeButtons();
+}
+
+function renderTopics(){
+  const lv = state.currentLevel;
+  const topics = lv==="mixed" ? [...DATA.topics[2], ...DATA.topics[3]] : DATA.topics[lv];
+  document.getElementById("topicList").innerHTML = topics.map(t=>`
+    <div class="section" style="cursor:pointer;" onclick="openTopic('${t.id}')">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:36px;">${t.icon}</div>
+        <div>
+          <div style="font-weight:bold;font-size:16px;">${t.name}</div>
+          <div style="font-size:12px;color:#636e72;">${t.sub}</div>
+        </div>
+        <div style="margin-left:auto;">
+          ${state.mastered.includes(t.id)?'<span class="tag done">✅ Done</span>':'<span class="tag">Open</span>'}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function openTopic(topicId){
+  const all = [...DATA.topics[2], ...DATA.topics[3]];
+  const topic = all.find(t=>t.id===topicId);
+  if(!topic) return;
+  const checks = DATA.checklists[topicId] || [];
+  const saved = state.checklist[topicId] || [];
+  document.getElementById("topicList").style.display = "none";
+  const detail = document.getElementById("topicDetail");
+  detail.style.display = "block";
+  detail.innerHTML = `
+    <div class="topic-detail">
+      <button class="back" onclick="closeTopic()">← Back to Topics</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="font-size:36px;">${topic.icon}</div>
+        <div>
+          <div style="font-weight:bold;font-size:18px;">${topic.name}</div>
+          <div style="font-size:12px;color:#636e72;">${topic.sub}</div>
+        </div>
+      </div>
+      <h3 style="margin:10px 0 6px;">🎯 Learning Goals</h3>
+      <p style="font-size:13px;color:#636e72;margin:0 0 10px;">Check each item when Bobo can do it confidently.</p>
+      <ul class="checklist">
+        ${checks.map((c,i)=>`
+          <li class="${saved.includes(i)?'checked':''}" onclick="toggleCheck('${topicId}', ${i})">
+            <div class="check-box"></div>
+            <div class="check-text">
+              ${c.text}
+              <span class="check-label">${c.label}</span>
+            </div>
+          </li>
+        `).join("")}
+      </ul>
+      <div class="detail-actions">
+        <button class="btn" onclick="startPractice('${topicId}'); closeTopic();">Start Practice</button>
+        <button class="btn secondary" onclick="resetTopicChecklist('${topicId}')">Reset Checklist</button>
+      </div>
+    </div>
+  `;
+}
+
+function closeTopic(){
+  document.getElementById("topicList").style.display = "block";
+  document.getElementById("topicDetail").style.display = "none";
+}
+
+function toggleCheck(topicId, index){
+  if(!state.checklist[topicId]) state.checklist[topicId] = [];
+  const idx = state.checklist[topicId].indexOf(index);
+  if(idx >= 0) state.checklist[topicId].splice(idx,1);
+  else state.checklist[topicId].push(index);
+  save();
+  openTopic(topicId);
+}
+
+function resetTopicChecklist(topicId){
+  if(!confirm("Reset checklist for this topic?")) return;
+  state.checklist[topicId] = [];
+  save();
+  openTopic(topicId);
+}
+
+function setLevel(lv){
+  state.currentLevel = lv;
+  state.practiceTopic = null;
+  document.getElementById("practiceArea").style.display = "none";
+  closeTopic();
+  save();
+}
+
+// ===== PRACTICE =====
+let practiceProblem = null;
+function renderPracticeGrid(){
+  const lv = state.currentLevel;
+  const topics = lv==="mixed" ? [...DATA.topics[2], ...DATA.topics[3]] : DATA.topics[lv];
+  document.getElementById("practiceGrid").innerHTML = topics.map(t=>`
+    <div class="topic-card" onclick="startPractice('${t.id}')">
+      <div class="icon">${t.icon}</div>
+      <div class="name">${t.name}</div>
+      <div class="sub">${t.sub}</div>
+    </div>
+  `).join("");
+}
+
+function startPractice(topicId){
+  state.practiceTopic = topicId;
+  document.getElementById("practiceArea").style.display = "block";
+  document.getElementById("practiceQ").textContent = "Ready...";
+  document.getElementById("practiceChoices").innerHTML = "";
+  document.getElementById("practiceInput").style.display = "none";
+  document.getElementById("practiceFeedback").textContent = "";
+  nextPractice();
+}
+
+function exitPractice(){
+  state.practiceTopic = null;
+  document.getElementById("practiceArea").style.display = "none";
+}
+function resetPractice(){
+  if(!state.practiceTopic) return;
+  if(!confirm("Restart this practice set? Progress will be lost.")) return;
+  startPractice(state.practiceTopic);
+}
+
+function nextPractice(){
+  let topicId = state.practiceTopic;
+  if(!topicId){
+    const lv = state.currentLevel;
+    topicId = (lv==="mixed" ? "p2-num" : ("p"+lv+"-num"));
+  }
+  const gen = DATA.problems[topicId];
+  if(!gen){ document.getElementById("practiceQ").textContent = "Coming soon!"; return; }
+  practiceProblem = gen();
+  const p = practiceProblem;
+  state.practice.total++;
+  document.getElementById("practiceQ").textContent = p.stem;
+  document.getElementById("practiceFeedback").textContent = "";
+  const inputArea = document.getElementById("practiceInput");
+  const choicesArea = document.getElementById("practiceChoices");
+
+  if(p.type === "calc" || typeof p.a === "number"){
+    inputArea.style.display = "flex";
+    choicesArea.style.display = "none";
+    inputArea.innerHTML = `<input id="pAns" type="number" placeholder="Type answer" style="flex:1;padding:8px 10px;border-radius:8px;border:2px solid #dfe6e9;font-size:15px;" />
+      <button class="btn" onclick="checkPractice()">Submit</button>`;
+    setTimeout(()=>document.getElementById("pAns")?.focus(), 50);
+  } else {
+    inputArea.style.display = "none";
+    choicesArea.style.display = "grid";
+    const options = generateChoices(p.a, p.stem);
+    choicesArea.innerHTML = options.map((c,i)=>
+      `<button class="choice" onclick="pickPractice(${i}, '${String(c).replace(/'/g,"\\'")}')">${c}</button>`
+    ).join("");
+    window._practiceAnswer = p.a;
+    window._practiceChoices = options;
+  }
+}
+
+function generateChoices(answer, stem){
+  const isNum = typeof answer === "number";
+  let opts = new Set();
+  opts.add(answer);
+  while(opts.size < 4){
+    let fake;
+    if(isNum){
+      fake = answer + rnd(-5,5);
+      if(fake < 0) fake = 0;
+    } else {
+      fake = "Wrong " + rnd(1,9);
+    }
+    if(fake !== answer) opts.add(fake);
+  }
+  return shuffle([...opts]);
+}
+
+function checkPractice(){
+  const input = document.getElementById("pAns");
+  const val = input.value.trim();
+  if(!val){ input.focus(); return; }
+  const correct = practiceProblem.a;
+  if(String(val) === String(correct)){
+    input.classList.add("correct"); input.classList.remove("wrong");
+    document.getElementById("practiceFeedback").innerHTML = "✅ Correct! +⭐";
+    state.practice.done.push(practiceProblem.stem);
+    if(state.practiceTopic && !state.mastered.includes(state.practiceTopic)){
+      state.mastered.push(state.practiceTopic);
+    }
+    addStar(1);
+  } else {
+    input.classList.add("wrong"); input.classList.remove("correct");
+    document.getElementById("practiceFeedback").innerHTML = `❎ Answer: ${correct}`;
+    addError("calc", `${practiceProblem.stem} — You: ${val}, Correct: ${correct}`);
+  }
+  save();
+}
+
+function pickPractice(idx, choice){
+  const btns = document.querySelectorAll("#practiceChoices .choice");
+  if(btns._done) return;
+  btns._done = true;
+  const correct = window._practiceAnswer;
+  const isStr = typeof correct === "string";
+  btns.forEach((b,bi)=>{
+    b.disabled = true;
+    if(String(window._practiceChoices[bi]) === String(correct)) b.classList.add("correct");
+  });
+  if(String(choice) === String(correct)){
+    document.getElementById("practiceFeedback").innerHTML = "✅ Correct! +⭐";
+    state.practice.done.push(practiceProblem.stem);
+    if(state.practiceTopic && !state.mastered.includes(state.practiceTopic)){
+      state.mastered.push(state.practiceTopic);
+    }
+    addStar(1);
+  } else {
+    btns[idx].classList.add("wrong");
+    document.getElementById("practiceFeedback").innerHTML = `❎ Answer: ${correct}`;
+    addError(isStr?"concept":"calc", `${practiceProblem.stem} — You: ${choice}, Correct: ${correct}`);
+  }
+  save();
+}
+
+// ===== WORD PROBLEMS =====
+let wordState = null;
+function setWordMode(m){
+  state.wordMode = m;
+  save();
+  if(wordState) startWordProb();
+}
+function updateWordModeButtons(){
+  ["p2","p3","mixed"].forEach(m=>{
+    const el = document.getElementById("wpMode"+m.charAt(0).toUpperCase()+m.slice(1));
+    if(el) el.style.background = state.wordMode===m ? "#6c5ce7" : "#b2bec3";
+    if(el) el.style.color = state.wordMode===m ? "white" : "#333";
+  });
+}
+function startWordProb(){
+  let pool = DATA.wordProblems;
+  if(state.wordMode==="p2") pool = pool.filter(w=>w.level==="p2");
+  else if(state.wordMode==="p3") pool = pool.filter(w=>w.level==="p3");
+  pool = shuffle([...pool]).slice(0,10);
+  wordState = {pool, idx:0, score:0};
+  document.getElementById("wpReset").style.display = "inline-block";
+  renderWordProb();
+}
+function renderWordProb(){
+  if(!wordState) return;
+  const p = wordState.pool[wordState.idx];
+  document.getElementById("wordProbQ").innerHTML = `<b>${wordState.idx+1}.</b> ${p.stem}<br/><span style="font-size:12px;color:#636e72;">Hint: ${p.hint}</span>`;
+  document.getElementById("wordProbFeedback").textContent = "";
+  document.getElementById("wordProbInput").style.display = "flex";
+  document.getElementById("wordProbInput").innerHTML = `<input id="wpAns" type="text" placeholder="Answer or number sentence" style="flex:1;padding:8px 10px;border-radius:8px;border:2px solid #dfe6e9;font-size:15px;" />
+    <button class="btn" onclick="checkWordProb()">Submit</button>`;
+  document.getElementById("wpNext").style.display = "none";
+  setTimeout(()=>document.getElementById("wpAns")?.focus(), 50);
+}
+function resetWordProb(){
+  if(!confirm("Restart Word Problems? Progress will be lost.")) return;
+  startWordProb();
+}
+
+function nextWordProb(){
+  if(!wordState) return;
+  wordState.idx++;
+  if(wordState.idx >= wordState.pool.length){
+    const score = wordState.score;
+    const total = wordState.pool.length;
+    document.getElementById("wordProbQ").innerHTML = `🎉 Done! Score: <b>${score}/${total}</b>`;
+    document.getElementById("wordProbChoices").innerHTML = "";
+    document.getElementById("wordProbInput").style.display = "none";
+    document.getElementById("wordProbFeedback").innerHTML = score>=8?"🏆 Amazing!":score>=5?"👍 Good job!":"💪 Keep practicing!";
+    document.getElementById("wpNext").style.display = "none";
+    addStar(score>=5?2:1);
+    return;
+  }
+  renderWordProb();
+}
+
+function checkWordProb(){
+  const input = document.getElementById("wpAns");
+  const val = input.value.trim();
+  if(!val){ input.focus(); return; }
+  const p = wordState.pool[wordState.idx];
+  if(String(val) === String(p.a) || val.includes(String(p.a))){
+    input.classList.add("correct"); input.classList.remove("wrong");
+    document.getElementById("wordProbFeedback").innerHTML = "✅ Correct! +⭐";
+    wordState.score++;
+    addStar(1);
+  } else {
+    input.classList.add("wrong"); input.classList.remove("correct");
+    document.getElementById("wordProbFeedback").innerHTML = `❎ Answer: ${p.a}`;
+    addError("word", `${p.stem} — You: ${val}, Correct: ${p.a}`);
+  }
+  document.getElementById("wpNext").style.display = "inline-block";
+}
+
+// ===== OLYMPIAD =====
+let olympiadState = null;
+function startOlympiad(){
+  const easy = DATA.olympiad.filter(q=>q.diff==="easy").sort(()=>Math.random()-0.5).slice(0,5);
+  const medium = DATA.olympiad.filter(q=>q.diff==="medium").sort(()=>Math.random()-0.5).slice(0,8);
+  const hard = DATA.olympiad.filter(q=>q.diff==="hard").sort(()=>Math.random()-0.5).slice(0,7);
+  const pool = [...easy, ...medium, ...hard];
+  olympiadState = {pool, idx:0, score:0, hintsUsed:0};
+  state.olympiad.total = pool.length;
+  document.getElementById("olympiadStart").style.display = "none";
+  document.getElementById("olympiadArea").style.display = "block";
+  showOlympiad();
+}
+function showOlympiad(){
+  const o = olympiadState;
+  if(o.idx >= o.pool.length){
+    const score=o.score, total=o.pool.length;
+    document.getElementById("olympiadQ").innerHTML = `🎉 Challenge Complete! Score: <b>${score}/${total}</b>`;
+    document.getElementById("olympiadChoices").innerHTML = "";
+    document.getElementById("olympiadInput").style.display = "none";
+    document.getElementById("olympiadFeedback").innerHTML = score>=18?"🏆 Outstanding!":score>=12?"👍 Great work!":"💪 Keep training!";
+    state.olympiad.done = total;
+    state.olympiad.score = score;
+    addStar(score>=12?3:1);
+    save();
+    return;
+  }
+  const q = o.pool[o.idx];
+  o.hintsUsed = 0;
+  document.getElementById("olympiadProgress").textContent = `${o.idx+1}/${o.pool.length}`;
+  document.getElementById("olympiadScore").textContent = `Score: ${o.score}`;
+  document.getElementById("olympiadDiff").textContent = q.diff ? q.diff.charAt(0).toUpperCase()+q.diff.slice(1) : "";
+  document.getElementById("olympiadQ").textContent = q.q;
+  document.getElementById("olympiadFeedback").textContent = "";
+
+  const isNum = typeof q.a === "number";
+  const inputArea = document.getElementById("olympiadInput");
+  const choicesArea = document.getElementById("olympiadChoices");
+  if(isNum){
+    inputArea.style.display = "flex"; choicesArea.style.display = "none";
+    inputArea.innerHTML = `<input id="oAns" type="number" placeholder="Answer" style="flex:1;padding:8px 10px;border-radius:8px;border:2px solid #dfe6e9;font-size:15px;" />
+      <button class="btn" onclick="checkOlympiad()">Submit</button>`;
+    setTimeout(()=>document.getElementById("oAns")?.focus(), 50);
+  } else {
+    inputArea.style.display = "none"; choicesArea.style.display = "grid";
+    const options = generateOlympiadChoices(q.a);
+    choicesArea.innerHTML = options.map((c,i)=>
+      `<button class="choice" onclick="pickOlympiad(${i}, '${String(c).replace(/'/g,"\\'")}')">${c}</button>`
+    ).join("");
+    window._oAns = q.a; window._oOpts = options;
+  }
+}
+
+function generateOlympiadChoices(answer){
+  const map = {"Wednesday":["Monday","Wednesday","Friday"],"Square":["Square","Circle","Triangle"],"5 cm":["4 cm","5 cm","6 cm"]};
+  if(map[answer]) return shuffle(map[answer]);
+  let opts = new Set([answer]);
+  while(opts.size < 4){
+    let fake = typeof answer === "number" ? answer + rnd(-3,3) : "Option"+rnd(1,9);
+    if(fake !== answer) opts.add(fake);
+  }
+  return shuffle([...opts]);
+}
+
+function checkOlympiad(){
+  const input = document.getElementById("oAns");
+  const val = input.value.trim();
+  if(!val){ input.focus(); return; }
+  const correct = olympiadState.pool[olympiadState.idx].a;
+  if(String(val) === String(correct)){
+    input.classList.add("correct"); input.classList.remove("wrong");
+    document.getElementById("olympiadFeedback").innerHTML = "✅ Correct! +⭐";
+    olympiadState.score++;
+    addStar(1);
+  } else {
+    input.classList.add("wrong"); input.classList.remove("correct");
+    document.getElementById("olympiadFeedback").innerHTML = `❎ Answer: ${correct}`;
+    addError("olympiad", `${olympiadState.pool[olympiadState.idx].q} — You: ${val}, Correct: ${correct}`);
+  }
+  olympiadState.idx++;
+  save();
+}
+
+function pickOlympiad(idx, choice){
+  const btns = document.querySelectorAll("#olympiadChoices .choice");
+  if(btns._done) return;
+  btns._done = true;
+  const correct = window._oAns;
+  btns.forEach((b,bi)=>{
+    b.disabled = true;
+    if(String(window._oOpts[bi]) === String(correct)) b.classList.add("correct");
+  });
+  if(String(choice) === String(correct)){
+    document.getElementById("olympiadFeedback").innerHTML = "✅ Correct! +⭐";
+    olympiadState.score++;
+    addStar(1);
+  } else {
+    btns[idx].classList.add("wrong");
+    document.getElementById("olympiadFeedback").innerHTML = `❎ Answer: ${correct}`;
+    addError("olympiad", `${olympiadState.pool[olympiadState.idx].q} — You: ${choice}, Correct: ${correct}`);
+  }
+  olympiadState.idx++;
+  save();
+}
+
+function olympiadHint(){
+  const q = olympiadState.pool[olympiadState.idx];
+  if(!q || !q.hints) return;
+  if(olympiadState.hintsUsed < q.hints.length){
+    const hint = q.hints[olympiadState.hintsUsed];
+    document.getElementById("olympiadFeedback").innerHTML = `💡 Hint ${olympiadState.hintsUsed+1}/${q.hints.length}: ${hint}`;
+    olympiadState.hintsUsed++;
+  } else {
+    document.getElementById("olympiadFeedback").innerHTML = "💡 No more hints!";
+  }
+}
+
+function nextOlympiad(){
+  olympiadState.idx++;
+  showOlympiad();
+}
+function resetOlympiad(){
+  if(!confirm("Restart Olympiad challenge? Progress will be lost.")) return;
+  startOlympiad();
+}
+
+// ===== MISTAKES =====
+function renderErrors(){
+  const filter = document.getElementById("errorFilter").value;
+  let list = state.errors;
+  if(filter !== "all") list = list.filter(e=>e.type===filter);
+  const el = document.getElementById("errorList");
+  if(!list.length){ el.innerHTML = "<div class='empty'>No mistakes yet. Great job!</div>"; return; }
+  el.innerHTML = list.slice(0,50).map(e=>`
+    <div style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">
+      <div style="color:#636e72;">${e.time}</div>
+      <div style="margin-top:2px;">[${e.type==='calc'?'Calc':e.type==='concept'?'Concept':e.type==='olympiad'?'Olympiad':'Word'}] ${e.text}</div>
+    </div>
+  `).join("");
+}
+function clearErrors(){
+  if(confirm("Clear all mistakes?")){ state.errors=[]; save(); }
+}
+
+// ===== PROGRESS =====
+function renderMastered(){
+  const allTopics = [...DATA.topics[2], ...DATA.topics[3]];
+  document.getElementById("masteredGrid").innerHTML = state.mastered.filter(m=>allTopics.some(t=>t.id===m)).map(tid=>{
+    const t = allTopics.find(x=>x.id===tid);
+    return t ? `<div class="card"><div class="emoji">${t.icon}</div><div class="title">${t.name}</div><div class="tags"><span class="tag done">✅ Done</span></div></div>` : "";
+  }).join("") || "<div class='empty'>Practice topics to master them.</div>";
+
+  const weak = allTopics.filter(t=>!state.mastered.includes(t.id));
+  const weakHtml = weak.slice(0,20).map(t=>`<div class="card"><div class="emoji">${t.icon}</div><div class="title">${t.name}</div><div class="tags"><span class="tag weak">📖 Review</span></div></div>`).join("");
+  const weakContainer = document.getElementById("weakGrid");
+  if(weakContainer){
+    weakContainer.innerHTML = weakHtml || "<div class='empty' style='color:#00b894;'>Amazing! All topics practiced.</div>";
+  }
+}
+
+function renderStarWall(){
+  const el = document.getElementById("starWall");
+  if(!state.stickers.length){ el.textContent = "No stickers yet. Keep learning!"; return; }
+  el.innerHTML = state.stickers.map(s=>`<span title="${s.date}">${s.emoji}</span>`).join(" ");
+}
+
+function renderWeekly(){
+  const el = document.getElementById("weeklyStats");
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+  const wa = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth()+1).padStart(2,'0')}-${String(weekAgo.getDate()).padStart(2,'0')}`;
+  const weekDays = state.days.filter(d=>d>=wa).length;
+  const weekStars = state.stickers.filter(s=>s.date>=wa).length;
+  el.innerHTML = `
+    <div class="stat"><div class="num">${weekDays}</div><div class="lbl">Days this week</div></div>
+    <div class="stat"><div class="num">${weekStars}</div><div class="lbl">Stickers</div></div>
+    <div class="stat"><div class="num">${state.stars}</div><div class="lbl">Total stars</div></div>
+    <div class="stat"><div class="num">${state.practice.done.length}</div><div class="lbl">Problems done</div></div>
+  `;
+}
+
+// ===== TABS =====
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("show", p.id===name));
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.tab)));
+
+updateUI();
+</script>
+</body>
+</html>

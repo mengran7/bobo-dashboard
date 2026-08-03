@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="我的工作台" />
+<title>我的工作台</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif; background: linear-gradient(135deg, #f5f6fa, #e8eaf6); color: #2d3436; min-height: 100vh; }
+  
+  .header { background: linear-gradient(135deg, #6c5ce7, #a29bfe, #fd79a8); color: white; padding: 16px 18px; padding-left: 90px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(108,92,231,0.2); }
+  .header h1 { margin: 0; font-size: 18px; }
+  .header .date { font-size: 12px; opacity: 0.9; margin-top: 3px; }
+  
+  .left-nav { position: fixed; left: 0; top: 0; bottom: 0; width: 70px; background: linear-gradient(180deg, #6c5ce7, #a29bfe); display: flex; flex-direction: column; align-items: center; padding: 12px 0; z-index: 20; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+  .left-nav .logo { font-size: 28px; margin-bottom: 10px; }
+  .left-nav button { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 12px 0; width: 100%; position: relative; transition: all 0.2s; opacity: 0.8; }
+  .left-nav button.active { background: rgba(255,255,255,0.2); opacity: 1; }
+  .left-nav button:active { transform: scale(0.95); }
+  .left-nav .nav-label { font-size: 10px; margin-top: 2px; }
+  .left-nav button .emoji { display: block; font-size: 24px; }
+  
+  .container { padding: 12px; padding-left: 85px; max-width: 600px; margin: 0 auto; }
+  
+  .card { background: white; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.06); animation: fadeInUp 0.3s ease; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .card h3 { margin: 0 0 10px; font-size: 15px; color: #6c5ce7; display: flex; align-items: center; gap: 6px; }
+  
+  .schedule-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .schedule-row:last-child { border-bottom: none; }
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+  .tag.work { background: #dfe6e9; color: #2d3436; }
+  .tag.transport { background: #ffeaa7; color: #2d3436; }
+  .tag.exercise { background: #55efc4; color: #006644; }
+  .tag.family { background: #fab1a0; color: #2d3436; }
+  
+  .stock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stock-item { background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 12px; padding: 12px; text-align: center; border: 2px solid #f0f0f0; transition: all 0.2s; }
+  .stock-item:active { transform: scale(0.97); }
+  .stock-name { font-size: 12px; color: #636e72; font-weight: 500; }
+  .stock-price { font-size: 20px; font-weight: bold; margin: 4px 0; color: #2d3436; }
+  .stock-change { font-size: 12px; font-weight: 600; }
+  .up { color: #d63031; }
+  .down { color: #00b894; }
+  .flat { color: #636e72; }
+  
+  .quote-box { background: linear-gradient(135deg, #fff5c2, #ffd1dc, #c2f0ff); border-radius: 16px; padding: 18px; text-align: center; font-size: 16px; line-height: 1.7; margin-bottom: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.06); position: relative; overflow: hidden; }
+  .quote-box::before { content: '"'; position: absolute; top: -10px; left: 10px; font-size: 60px; color: rgba(108,92,231,0.15); font-family: Georgia; }
+  
+  .question-box { background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 16px; padding: 14px; margin-bottom: 10px; border: 2px dashed #dfe6e9; }
+  .question-box p { margin: 0 0 10px; font-size: 14px; color: #6c5ce7; font-weight: 500; }
+  textarea { width: 100%; border: 1px solid #dfe6e9; border-radius: 12px; padding: 10px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; background: #fafafa; }
+  .btn { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; border: none; border-radius: 12px; padding: 10px 18px; font-size: 14px; cursor: pointer; margin-top: 8px; font-weight: 500; box-shadow: 0 2px 6px rgba(108,92,231,0.2); }
+  .btn:active { opacity: 0.8; transform: scale(0.98); }
+  .btn-secondary { background: linear-gradient(135deg, #fd79a8, #fab1a0); }
+  
+  .todo-item { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+  .todo-item input { margin-right: 10px; width: 18px; height: 18px; accent-color: #6c5ce7; }
+  .todo-item.done { text-decoration: line-through; color: #b2bec3; }
+  
+  .bobo-stat { display: flex; justify-content: space-around; text-align: center; margin-bottom: 10px; }
+  .bobo-stat .num { font-size: 24px; font-weight: bold; color: #6c5ce7; }
+  .bobo-stat .lbl { font-size: 11px; color: #636e72; margin-top: 2px; }
+  
+  .journal-entry { background: #f8f9fa; border-radius: 12px; padding: 10px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid #6c5ce7; }
+  .journal-date { font-size: 11px; color: #636e72; margin-bottom: 4px; font-weight: 500; }
+  .empty { text-align: center; color: #b2bec3; padding: 20px; font-size: 13px; }
+  
+  .refresh-btn { position: fixed; top: 72px; right: 10px; background: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; box-shadow: 0 3px 10px rgba(0,0,0,0.15); cursor: pointer; z-index: 11; display: flex; align-items: center; justify-content: center; }
+  .refresh-btn:active { transform: scale(0.92); }
+  
+  .floating-star { position: fixed; font-size: 20px; opacity: 0; pointer-events: none; z-index: 5; animation: floatStar 3s ease-out forwards; }
+  @keyframes floatStar { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
+  
+  .panel { display: none; animation: fadeIn 0.3s; }
+  .panel.show { display: block; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .greeting { font-size: 14px; color: white; opacity: 0.95; margin-top: 6px; }
+  
+  input[type="text"] { width: 100%; border: 1px solid #dfe6e9; border-radius: 12px; padding: 10px; font-size: 14px; font-family: inherit; background: #fafafa; }
+</style>
+</head>
+<body>
+
+<div class="left-nav">
+  <div class="logo">🌟</div>
+  <button class="active" data-tab="today" title="今日"><span class="emoji">📋</span><span class="nav-label">今日</span></button>
+  <button data-tab="stocks" title="股票"><span class="emoji">📈</span><span class="nav-label">股票</span></button>
+  <button data-tab="manifest" title="显化角"><span class="emoji">💭</span><span class="nav-label">显化角</span></button>
+  <button data-tab="news" title="新闻"><span class="emoji">📰</span><span class="nav-label">新闻</span></button>
+  <button data-tab="bobo" title="Bobo"><span class="emoji">📚</span><span class="nav-label">Bobo</span></button>
+  <button data-tab="journal" title="日记"><span class="emoji">📝</span><span class="nav-label">日记</span></button>
+</div>
+
+<div class="header">
+  <h1>我的工作台</h1>
+  <div class="date" id="headerDate"></div>
+  <div class="greeting" id="greeting"></div>
+</div>
+
+<button class="refresh-btn" onclick="refreshAll()" title="刷新">🔄</button>
+
+<div class="container">
+
+  <!-- 今日 -->
+  <div id="today" class="panel show">
+    <div class="card">
+      <h3>🏃 今日运动</h3>
+      <div id="exerciseBox"></div>
+    </div>
+    <div class="card">
+      <h3>🌟 今日能量</h3>
+      <div id="dailyEnergy" class="quote-box"></div>
+    </div>
+    <div class="card">
+      <h3>📈 市场速览</h3>
+      <div id="miniStocks" class="stock-grid"></div>
+    </div>
+    <div class="card">
+      <h3>📰 今日头条</h3>
+      <div id="miniNews"></div>
+    </div>
+    <div class="card">
+      <h3>✅ 今日小目标</h3>
+      <div id="todoList"></div>
+      <input type="text" id="todoInput" placeholder="添加一个新目标..." />
+      <button class="btn" onclick="addTodo()">＋ 添加</button>
+    </div>
+  </div>
+
+  <!-- 股票 -->
+  <div id="stocks" class="panel">
+    <div class="card">
+      <h3>🇸🇬 新加坡</h3>
+      <div class="stock-grid" id="sgStocks"></div>
+    </div>
+    <div class="card">
+      <h3>🇺🇸 美国</h3>
+      <div class="stock-grid" id="usStocks"></div>
+    </div>
+    <div class="empty" id="stockHint">下拉页面或点右上角 🔄 刷新</div>
+  </div>
+
+  <!-- 显化角 -->
+  <div id="manifest" class="panel">
+    <div class="quote-box" id="dailyQuote">加载中...</div>
+    <div class="question-box">
+      <p>💬 今日一问：<span id="dailyQuestion"></span></p>
+      <textarea id="answerInput" placeholder="写下你的想法..."></textarea>
+      <button class="btn" onclick="saveAnswer()">💾 保存</button>
+    </div>
+    <div class="card">
+      <h3>🎯 我的显化意图</h3>
+      <textarea id="intentInput" placeholder="写下你今天想吸引/显化的事物..." style="min-height:60px;"></textarea>
+      <button class="btn btn-secondary" onclick="saveIntent()">✨ 保存意图</button>
+    </div>
+    <div id="pastAnswers" style="margin-top:10px;"></div>
+  </div>
+
+  <!-- Bobo -->
+  <div id="bobo" class="panel">
+    <div class="card">
+      <h3>📊 学习概览</h3>
+      <div class="bobo-stat">
+        <div><div class="num" id="boboStars">-</div><div class="lbl">⭐ 星星</div></div>
+        <div><div class="num" id="boboDays">-</div><div class="lbl">📅 天数</div></div>
+        <div><div class="num" id="boboErrors">-</div><div class="lbl">🩹 错词</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📖 当前课程</h3>
+      <div id="boboLesson">加载中...</div>
+    </div>
+  </div>
+
+  <!-- 新闻 -->
+  <div id="news" class="panel">
+    <div id="newsList" style="margin-top:10px;"></div>
+  </div>
+
+  <!-- 日记 -->
+  <div id="journal" class="panel">
+    <div class="card">
+      <h3>✍️ 碎碎念</h3>
+      <textarea id="journalInput" placeholder="今天想到什么、发生了什么，随便写..." style="min-height:120px;"></textarea>
+      <button class="btn" onclick="saveJournal()">💾 保存</button>
+    </div>
+    <div class="card">
+      <h3>🌙 晚间复盘</h3>
+      <p style="font-size:13px;color:#636e72;margin:0 0 8px;">点击生成今天的复盘总结</p>
+      <button class="btn btn-secondary" onclick="generateReview()" style="width:100%;">✨ 生成复盘</button>
+      <div id="reviewOutput" style="margin-top:10px;"></div>
+    </div>
+    <div id="journalList"></div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const LS = { get(k,d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d; }catch{ return d; } }, set(k,v){ localStorage.setItem(k, JSON.stringify(v)); } };
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const dayOfWeek = () => new Date().getDay();
+
+const QUOTES = [
+  "你相信什么，就会吸引什么。", "每一次感恩，都是在为未来铺路。", "你不需要知道全部路径，只需要迈出第一步。",
+  "宇宙不会给你无法承受的，但会给你需要面对的。", "你的思想是磁铁，吸引着与之共振的一切。",
+  "今天种下的想法，决定了明天的现实。", "允许自己渴望，也允许自己得到。",
+  "当你真心想要某样东西，整个宇宙都会帮你。", "感恩你所拥有的，宇宙会给你更多值得感恩的。",
+  "你的感受，是你与宇宙之间的对话。", "相信已经拥有，而不是等待拥有。",
+  "每一个'我愿意'，都在打开一扇门。", "你的能量会为你吸引对的人和事。",
+  "放下对结果的执念，享受创造的过程。", "你今天的心情，就是你明天的现实。",
+  "你值得拥有一切美好。", "你的关注点，决定了你的现实走向。",
+  "每一次呼吸，都是新的开始。", "相信奇迹，因为你本身就是奇迹。",
+  "你是自己人生的作者，拿起笔写你想要的故事。", "吸引力法则的秘诀：感受已经拥有的快乐。"
+];
+
+const QUESTIONS = [
+  "今天你的能量如何？", "今天有什么让你开心的小事？", "今天你做了什么让自己感觉好的事？",
+  "今天你有没有感受到宇宙的小信号？", "今天你最想感谢的是什么？",
+  "今天你有什么新的想法或灵感？", "今天你有没有勇敢地迈出一步？",
+  "今天你的身体感觉怎么样？", "今天你有没有对某人表达善意？",
+  "今天你最想对明天的自己说什么？"
+];
+
+function getSchedule() {
+  const d = dayOfWeek();
+  const items = [];
+  if (d === 1 || d === 5) items.push({ time: "全天", text: "在家上班", tag: "work" });
+  else if (d >= 2 && d <= 4) { items.push({ time: "全天", text: "去公司上班", tag: "work" }); items.push({ time: "下午", text: "坐 86 路接 Bobo", tag: "transport" }); }
+  items.push({ time: "中午", text: "运动 1 小时 💪", tag: "exercise" });
+  if (d === 6) items.push({ time: "全天", text: "Bobo 跟 Gerald 上课", tag: "family" });
+  if (d === 0) items.push({ time: "全天", text: "周日 · 小孩在家", tag: "family" });
+  return items;
+}
+
+function renderSchedule() {
+  const items = getSchedule();
+  $("scheduleContent").innerHTML = items.map(i => `<div class="schedule-row"><span>${i.time} ${i.text}</span><span class="tag ${i.tag}">${i.text.split(" ")[0]}</span></div>`).join("");
+}
+
+function renderTodos() {
+  const todos = LS.get("todos", []);
+  if (!todos.length) { $("todoList").innerHTML = '<div class="empty">还没有目标，添加一个吧</div>'; return; }
+  $("todoList").innerHTML = todos.map((t, i) => `<div class="todo-item ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})" /><span>${t.text}</span></div>`).join("");
+}
+function addTodo() {
+  const input = $("todoInput");
+  const text = input.value.trim(); if (!text) return;
+  const todos = LS.get("todos", []);
+  todos.push({ text, done: false });
+  LS.set("todos", todos);
+  input.value = "";
+  renderTodos();
+  spawnStar(input);
+}
+function toggleTodo(i) {
+  const todos = LS.get("todos", []);
+  todos[i].done = !todos[i].done;
+  LS.set("todos", todos);
+  renderTodos();
+}
+
+function spawnStar(el) {
+  const rect = el.getBoundingClientRect();
+  const star = document.createElement("div");
+  star.className = "floating-star";
+  star.textContent = "⭐";
+  star.style.left = rect.left + rect.width / 2 + "px";
+  star.style.top = rect.top + "px";
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 3000);
+}
+
+let stockCache = { prices: {}, time: 0 };
+async function refreshStocks() {
+  try {
+    const resp = await fetch("/api/stocks");
+    stockCache = await resp.json();
+    LS.set("stockCache", { time: stockCache.time || Date.now() / 1000, prices: stockCache.prices || {} });
+    renderStocks();
+    renderMiniStocks();
+  } catch (e) { alert("获取股票失败，可能是网络问题，稍后再试"); }
+}
+function renderStocks() {
+  let html = "";
+  ["D05.SI","O39.SI","U11.SI","^STI"].forEach(s => { html += stockCard(s, stockCache.prices[s]); });
+  $("sgStocks").innerHTML = html;
+  html = "";
+  ["AAPL","TSLA","SPCX","NVDA","GOOGL","NFLX"].forEach(s => { html += stockCard(s, stockCache.prices[s]); });
+  $("usStocks").innerHTML = html;
+  const gc = stockCache.prices["GC=F"];
+  const usdSgd = stockCache.prices["USDSGD=X"];
+  if (gc && gc.price && usdSgd && usdSgd.price) {
+    const sgdPrice = gc.price * usdSgd.price;
+    const sgdChange = gc.change ? gc.change * usdSgd.price : null;
+    const sgdPct = gc.changePct;
+    const ozToGram = 31.1035;
+    const usdGram = gc.price / ozToGram;
+    const sgdGram = sgdPrice / ozToGram;
+    let goldHtml = stockCard("GC=F", {price: gc.price, change: gc.change, changePct: gc.changePct});
+    goldHtml += stockCard("GC/USD/g", {price: usdGram, change: null, changePct: null});
+    goldHtml += stockCard("GC=SGD", {price: sgdPrice, change: sgdChange, changePct: sgdPct});
+    goldHtml += stockCard("GC/SGD/g", {price: sgdGram, change: null, changePct: null});
+    $("usStocks").insertAdjacentHTML("beforeend", goldHtml);
+  }
+  const count = Object.keys(stockCache.prices).length;
+  $("stockHint").textContent = count ? `上次更新：${new Date(stockCache.time * 1000 || Date.now()).toLocaleTimeString("zh-CN")}` : "点击刷新获取最新价格";
+}
+function stockCard(symbol, data) {
+  const names = { "D05.SI":"星展银行", "O39.SI":"华侨银行", "U11.SI":"大华银行", "^STI":"海峡指数", "AAPL":"苹果", "TSLA":"特斯拉", "SPCX":"SpaceX", "NVDA":"英伟达", "GOOGL":"谷歌", "NFLX":"Netflix", "GC=F":"黄金(USD/盎司)", "GC=SGD":"黄金(SGD/盎司)", "GC/USD/g":"黄金(USD/克)", "GC/SGD/g":"黄金(SGD/克)", "USDSGD=X":"USD/SGD" };
+  const name = names[symbol] || symbol;
+  if (!data || !data.price) return `<div class="stock-item"><div class="stock-name">${name}</div><div class="stock-price">--</div><div class="stock-change flat">加载中</div></div>`;
+  const pct = data.changePct ? (data.changePct > 0 ? "+" : "") + data.changePct.toFixed(2) + "%" : "--";
+  const cls = data.change > 0 ? "up" : data.change < 0 ? "down" : "flat";
+  const arrow = data.change > 0 ? "▲" : data.change < 0 ? "▼" : "—";
+  return `<div class="stock-item"><div class="stock-name">${name}</div><div class="stock-price">${data.price.toFixed(2)}</div><div class="stock-change ${cls}">${arrow} ${pct}</div></div>`;
+}
+
+function initManifest() {
+  const seed = new Date().toDateString();
+  const qi = (seed.split(" ").reduce((a,c) => a + c.charCodeAt(0), 0)) % QUOTES.length;
+  const qIndex = (qi + new Date().getDate()) % QUOTES.length;
+  $("dailyQuote").textContent = `"${QUOTES[qIndex]}"`;
+  $("dailyQuestion").textContent = QUESTIONS[(new Date().getDate()) % QUESTIONS.length];
+  const saved = LS.get("manifestAnswer_" + today(), {});
+  if (saved.text) $("answerInput").value = saved.text;
+  $("intentInput").value = LS.get("manifestIntent", "");
+  renderPastAnswers();
+}
+function saveAnswer() {
+  const text = $("answerInput").value.trim(); if (!text) return;
+  LS.set("manifestAnswer_" + today(), { text, time: Date.now() });
+  spawnStar($("answerInput"));
+  setTimeout(() => alert("已保存 ✨"), 300);
+}
+function saveIntent() {
+  const text = $("intentInput").value.trim();
+  LS.set("manifestIntent", text);
+  spawnStar($("intentInput"));
+  setTimeout(() => alert("意图已保存 🌟"), 300);
+}
+function renderPastAnswers() {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith("manifestAnswer_")).sort().reverse().slice(0, 5);
+  if (!keys.length) { $("pastAnswers").innerHTML = ""; return; }
+  let html = "<div class='card'><h3>📝 近期问答记录</h3>";
+  keys.forEach(k => { const v = LS.get(k, {}); html += `<div class='journal-entry'><div class='journal-date'>${k.replace("manifestAnswer_","")}</div>${v.text}</div>`; });
+  html += "</div>";
+  $("pastAnswers").innerHTML = html;
+}
+
+function refreshBobo() {
+  fetch(window.location.origin + "/api/state").then(r => r.json()).then(data => {
+    if (!data || Object.keys(data).length === 0) {
+      // fallback: try read localStorage directly since both pages share same origin
+      try {
+        const ls = JSON.parse(localStorage.getItem("bobo_state_v3") || "{}");
+        if (ls && Object.keys(ls).length) data = ls;
+      } catch(e) {}
+    }
+    if (!data || Object.keys(data).length === 0) { $("boboStars").textContent = "-"; $("boboLesson").textContent = "尚未同步"; return; }
+    $("boboStars").textContent = data.stars || 0;
+    $("boboDays").textContent = data.days?.length || 0;
+    $("boboErrors").textContent = data.errors?.length || 0;
+    const lessons = ["第11课","第12课","第13课","第14课","第15课","第16课","第17课","第18课","第19课"];
+    const idx = Math.min(Math.max((data.currentLesson || 11) - 11, 0), lessons.length - 1);
+    $("boboLesson").textContent = lessons[idx] + " (第" + (data.currentLesson || 11) + "课)";
+  }).catch(() => {
+    try {
+      const ls = JSON.parse(localStorage.getItem("bobo_state_v3") || "{}");
+      if (ls && Object.keys(ls).length) {
+        $("boboStars").textContent = ls.stars || 0;
+        $("boboDays").textContent = ls.days?.length || 0;
+        $("boboErrors").textContent = ls.errors?.length || 0;
+        $("boboLesson").textContent = "第" + (ls.currentLesson || 11) + "课";
+        return;
+      }
+    } catch(e) {}
+    $("boboStars").textContent = "离线";
+  });
+}
+
+function saveJournal() {
+  const text = $("journalInput").value.trim(); if (!text) return;
+  const journals = LS.get("journals", []);
+  journals.unshift({ date: today(), text, time: Date.now() });
+  if (journals.length > 100) journals.length = 100;
+  LS.set("journals", journals);
+  $("journalInput").value = "";
+  renderJournals();
+  spawnStar($("journalInput"));
+}
+function renderJournals() {
+  const journals = LS.get("journals", []).slice(0, 20);
+  if (!journals.length) { $("journalList").innerHTML = '<div class="empty">还没有日记</div>'; return; }
+  $("journalList").innerHTML = journals.map(j => `<div class="journal-entry"><div class="journal-date">${j.date}</div>${j.text}</div>`).join("");
+}
+function generateReview() {
+  const journals = LS.get("journals", []);
+  const todayStr = today();
+  const todayEntries = journals.filter(j => j.date === todayStr);
+  if (!todayEntries.length) { $("reviewOutput").innerHTML = '<div class="empty">今天还没有日记，先去写点什么吧</div>'; return; }
+  const combined = todayEntries.map(j => j.text).join("; ");
+  const review = `【${todayStr} 复盘】\n\n今天你记录了 ${todayEntries.length} 条想法。\n\n关键词：${combined.slice(0, 120)}${combined.length > 120 ? "..." : ""}\n\n建议：继续保持觉察，记录本身就是最好的复盘。每一个想法都是一颗种子，今天你浇灌了多少？`;
+  $("reviewOutput").innerHTML = `<div class="journal-entry"><pre style="white-space:pre-wrap;font-family:inherit;margin:0;font-size:13px;">${review}</pre></div>`;
+}
+
+let newsCache = { articles: [], time: 0 };
+async function refreshNews() {
+  try {
+    const resp = await fetch("/api/news");
+    newsCache = await resp.json();
+    LS.set("newsCache", newsCache);
+    renderNews();
+    renderMiniNews();
+  } catch (e) {
+    alert("获取新闻失败，稍后再试");
+  }
+}
+function renderNews() {
+  const articles = newsCache.articles || [];
+  if (!articles.length) { $("newsList").innerHTML = '<div class="empty">暂无新闻，点击刷新</div>'; return; }
+  const grouped = {};
+  articles.forEach(a => {
+    const cat = a.category || "其他";
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(a);
+  });
+  let html = "";
+  for (const [cat, items] of Object.entries(grouped)) {
+    html += `<div class="card"><h3>${cat === '财经' ? '💰' : cat === '科技' ? '🤖' : '📰'} ${cat}</h3>`;
+    items.forEach(a => {
+      html += `<div class="journal-entry" style="cursor:pointer;" onclick="window.open('${a.url}','_blank')">
+        <div style="font-weight:500;font-size:13px;margin-bottom:4px;">${a.title}</div>
+        <div style="font-size:11px;color:#636e72;">${a.source} · ${a.time ? new Date(a.time).toLocaleString("zh-CN", {timeZone:"Asia/Singapore", month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : ""}</div>
+        ${a.desc ? `<div style="font-size:12px;color:#636e72;margin-top:4px;">${a.desc}</div>` : ""}
+      </div>`;
+    });
+    html += "</div>";
+  }
+  $("newsList").innerHTML = html;
+}
+
+document.querySelectorAll(".left-nav button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll(".left-nav button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("show"));
+    btn.classList.add("active");
+    $(tab).classList.add("show");
+    if (tab === "stocks") refreshStocks();
+    if (tab === "bobo") refreshBobo();
+    if (tab === "manifest") initManifest();
+    if (tab === "news") refreshNews();
+  });
+});
+
+function refreshAll() {
+  refreshStocks();
+  refreshNews();
+  refreshBobo();
+}
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function getWeekday() { return new Date().getDay(); }
+
+function renderExercise() {
+  const wd = getWeekday();
+  const todayStr = today();
+  const exercised = LS.get("exercised", {});
+  const done = !!exercised[todayStr];
+  const box = $("exerciseBox");
+  if (!box) return;
+  let msg = "";
+  let btnText = "";
+  let emoji = "";
+  if (wd === 2 || wd === 3 || wd === 4) {
+    msg = "今天在公司，别忘了运动哦！💪";
+    emoji = "🏢";
+  } else if (wd === 1 || wd === 5) {
+    msg = "今天在家，有没有运动呀？动一动更舒服～";
+    emoji = "🏠";
+  } else if (wd === 6 || wd === 0) {
+    msg = "周末啦，找时间动一动吧！";
+    emoji = "🌴";
+  }
+  if (done) {
+    box.innerHTML = `<div style="text-align:center;padding:10px;">✅ <strong>${emoji} 今天运动了！</strong><br/><span style="font-size:12px;color:#636e72;">太棒了，继续保持！</span></div>`;
+  } else {
+    box.innerHTML = `<div style="text-align:center;padding:10px;"><div style="font-size:32px;margin-bottom:6px;">${emoji}</div><p style="margin:6px 0;font-size:14px;">${msg}</p><button class="btn" onclick="toggleExercise()">✅ 我运动了！</button></div>`;
+  }
+}
+function toggleExercise() {
+  const exercised = LS.get("exercised", {});
+  exercised[today()] = true;
+  LS.set("exercised", exercised);
+  spawnStar(document.querySelector("#exerciseBox .btn"));
+  renderExercise();
+}
+function renderMiniStocks() {
+  const cache = LS.get("stockCache", {});
+  const prices = cache.prices || {};
+  const items = [];
+  const show = ["D05.SI","O39.SI","U11.SI","^STI","AAPL","TSLA","NVDA","GC=F"];
+  show.forEach(sym => {
+    const d = prices[sym];
+    if (!d || !d.price) return;
+    const name = sym === "GC=F" ? "🥇 黄金" : (sym === "^STI" ? "📊 STI" : sym);
+    const pct = d.changePct ? (d.changePct > 0 ? "+" : "") + d.changePct.toFixed(2) + "%" : "";
+    const cls = d.changePct > 0 ? "up" : (d.changePct < 0 ? "down" : "flat");
+    items.push(`<div class="stock-item"><div class="stock-name">${name}</div><div class="stock-price">${d.price.toFixed(2)}</div><div class="stock-change ${cls}">${pct}</div></div>`);
+  });
+  const el = $("miniStocks");
+  if (el) el.innerHTML = items.join("") || '<div class="empty">加载中...</div>';
+}
+function renderMiniNews() {
+  const news = LS.get("newsCache", {});
+  const articles = (news.articles || []).slice(0, 3);
+  const el = $("miniNews");
+  if (!el) return;
+  if (!articles.length) { el.innerHTML = '<div class="empty">暂无新闻</div>'; return; }
+  el.innerHTML = articles.map(a => `<div style="padding:8px 0;border-bottom:1px solid #f0f0f0;"><a href="${a.url}" target="_blank" style="color:#2d3436;text-decoration:none;font-size:13px;font-weight:500;">${a.title}</a><div style="font-size:11px;color:#b2bec3;margin-top:2px;">${a.source}</div></div>`).join("");
+}
+function refreshCurrent() {
+  const active = document.querySelector(".panel.show");
+  if (!active) return;
+  if (active.id === "stocks") refreshStocks();
+  if (active.id === "bobo") refreshBobo();
+  if (active.id === "manifest") initManifest();
+  if (active.id === "news") refreshNews();
+  if (active.id === "today") { refreshStocks(); refreshNews(); }
+}
+
+function init() {
+  const d = new Date();
+  const weekdays = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+  const hour = d.getHours();
+  const greet = hour < 12 ? "早上好" : hour < 18 ? "下午好" : "晚上好";
+  $("headerDate").textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${weekdays[d.getDay()]}`;
+  $("greeting").textContent = `${greet}，今天也要加油哦 ✨`;
+  renderExercise();
+  renderEnergy();
+  renderMiniStocks();
+  renderMiniNews();
+  renderTodos();
+  renderJournals();
+}
+function renderEnergy() {
+  const quotes = [
+    "我值得拥有一切美好。",
+    "今天，我正在吸引正向的机遇。",
+    "感恩我所拥有的一切，更多美好正在到来。",
+    "我相信宇宙的安排，一切都在最好的时间发生。",
+    "我专注于可能性，而不是限制。",
+    "今天我有意识地选择快乐。",
+    "我越是感恩，拥有的越多。",
+    "我相信自己有能力创造理想的生活。",
+    "每一次呼吸都在帮助我显化更好的自己。",
+    "今天的能量由我自己决定——我选择积极。",
+    "我正在吸引对的人、对的机会、对的时机。",
+    "放下担忧，相信宇宙会给我最好的安排。",
+    "我对自己说：你可以的，你真的很好。",
+    "把注意力放在想要的事物上，而不是缺少的。",
+    "今天种下善意的种子，未来会开花结果。"
+  ];
+  const q = quotes[Math.floor(Math.random() * quotes.length)];
+  const el = $("dailyEnergy");
+  if (el) el.textContent = q;
+}
+
+init();
+</script>
+
+</body>
+</html>

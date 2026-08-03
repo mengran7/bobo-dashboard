@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bobo 华文小行星 🌟 全册版</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: linear-gradient(135deg, #fff5c2, #ffd1dc, #c2f0ff);
+    min-height: 100vh;
+    color: #333;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 10;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    flex-wrap: wrap; gap: 10px;
+  }
+  .topbar h1 { margin: 0; font-size: 20px; }
+  .topbar .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge {
+    background: #ff6b6b; color: white; padding: 5px 12px;
+    border-radius: 999px; font-size: 13px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  }
+  .badge.blue { background: #0984e3; }
+  .badge.green { background: #00b894; }
+  .container { padding: 14px; max-width: 1200px; margin: 0 auto; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tab {
+    padding: 9px 14px; border-radius: 12px; border: none;
+    background: white; font-size: 14px; cursor: pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+    transition: transform .1s;
+  }
+  .tab:hover { transform: translateY(-1px); }
+  .tab.active { background: #6c5ce7; color: white; }
+  .panel { display: none; animation: fadeIn .2s; }
+  .panel.show { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 10px;
+  }
+  .card {
+    background: white; border-radius: 14px; padding: 12px;
+    text-align: center; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+    transition: transform .1s;
+    position: relative;
+  }
+  .card:active { transform: translateY(2px); }
+  .card .char { font-size: 36px; font-weight: bold; color: #2d3436; }
+  .card .meta { font-size: 11px; color: #636e72; margin-top: 3px; }
+  .card .tags { margin-top: 5px; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px; padding: 2px 7px; border-radius: 999px;
+    background: #dfe6e9; color: #2d3436;
+  }
+  .tag.write { background: #ffeaa7; }
+  .tag.done { background: #55efc4; color: #006644; }
+  .tag.weak { background: #fab1a0; }
+  .progress {
+    background: white; border-radius: 14px; padding: 14px; margin-bottom: 14px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+  }
+  .progress h3 { margin: 0 0 8px; font-size: 16px; }
+  .bar-wrap { background: #dfe6e9; border-radius: 999px; height: 12px; overflow: hidden; }
+  .bar { height: 100%; background: linear-gradient(90deg,#fdcb6e,#e17055); width: 0%; transition: width .3s; }
+  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .stat {
+    flex: 1; min-width: 90px; background: #f8f9fa; border-radius: 10px; padding: 8px;
+    text-align: center;
+  }
+  .stat .num { font-size: 20px; font-weight: bold; }
+  .stat .lbl { font-size: 11px; color: #636e72; }
+  .quiz {
+    background: white; border-radius: 14px; padding: 16px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+    max-width: 700px; margin: 0 auto;
+  }
+  .quiz .q { font-size: 20px; margin-bottom: 10px; line-height: 1.5; }
+  .quiz .choices { display: grid; gap: 8px; }
+  .quiz .choice {
+    padding: 10px 12px; border-radius: 10px; border: 2px solid #dfe6e9;
+    background: white; font-size: 16px; cursor: pointer; text-align: left;
+  }
+  .quiz .choice:hover { border-color: #6c5ce7; }
+  .quiz .choice.correct { background: #55efc4; border-color: #00b894; }
+  .quiz .choice.wrong { background: #ff7675; border-color: #d63031; color: white; }
+  .quiz .feedback { margin-top: 12px; font-size: 15px; min-height: 22px; }
+  .sticker { font-size: 56px; text-align: center; animation: pop .4s; }
+  @keyframes pop { from { transform: scale(0); } 60% { transform: scale(1.2); } to { transform: scale(1); } }
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 12px; border: none; border-radius: 10px; cursor: pointer;
+    background: #6c5ce7; color: white; font-size: 13px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+  }
+  .btn.secondary { background: #b2bec3; }
+  .lesson-section {
+    background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.05);
+  }
+  .lesson-section h3 { margin: 0 0 8px; font-size: 16px; }
+  .reading {
+    background: #fff9e6; border-left: 4px solid #fdcb6e;
+    padding: 10px; border-radius: 8px; line-height: 1.7;
+    font-size: 15px;
+  }
+  .question { margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 8px; }
+  .question .prompt { font-weight: bold; }
+  .answer-slot {
+    margin-top: 6px; display: flex; gap: 6px; align-items: center;
+  }
+  .answer-slot input {
+    flex: 1; padding: 7px 9px; border-radius: 8px; border: 2px solid #dfe6e9;
+    font-size: 15px;
+  }
+  .answer-slot input.correct { border-color: #00b894; background: #e6fff7; }
+  .answer-slot input.wrong { border-color: #d63031; background: #ffeaea; }
+  .stars { font-size: 20px; letter-spacing: 3px; }
+  .lesson-tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .lesson-tab {
+    padding: 6px 12px; border-radius: 999px; border: 2px solid #dfe6e9;
+    background: white; font-size: 13px; cursor: pointer;
+  }
+  .lesson-tab.active { background: #6c5ce7; color: white; border-color: #6c5ce7; }
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+  .filter-bar label { font-size: 13px; color: #636e72; }
+  .empty { color: #999; padding: 10px 0; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>🌟 Bobo 华文小行星 · 全册版</h1>
+  <div class="meta">
+    <button class="tab" id="btnSyncUp" title="上传进度到云端">⬆️ 同步</button>
+    <button class="tab" id="btnSyncDown" title="从云端下载进度">⬇️ 恢复</button>
+    <div class="badge blue" id="badgeLesson">第11-19课</div>
+    <div class="badge" id="starBadge">⭐ 0</div>
+    <div class="badge green" id="streakBadge">🔥 0天</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="learn">📚 学习</button>
+    <button class="tab" data-tab="review">🔁 复习</button>
+    <button class="tab" data-tab="errors">🩹 错词本</button>
+    <button class="tab" data-tab="progress">📈 进度</button>
+    <button class="tab" data-tab="write">✍️ 写话</button>
+  </div>
+
+  <!-- 学习 -->
+  <div id="learn" class="panel show">
+    <div class="progress">
+      <h3>全册总进度</h3>
+      <div class="bar-wrap"><div class="bar" id="totalBar"></div></div>
+      <div class="stats">
+        <div class="stat"><div class="num" id="statChars">0/0</div><div class="lbl">生字</div></div>
+        <div class="stat"><div class="num" id="statRead">0/0</div><div class="lbl">阅读</div></div>
+        <div class="stat"><div class="num" id="statWrite">0/0</div><div class="lbl">写话</div></div>
+        <div class="stat"><div class="num" id="statDays">0</div><div class="lbl">累计天数</div></div>
+      </div>
+    </div>
+    <div class="lesson-tabs" id="lessonTabs"></div>
+    <div id="lessonContent"></div>
+  </div>
+
+  <!-- 复习 -->
+  <div id="review" class="panel">
+    <div class="quiz" id="quizBox">
+      <div class="q" id="quizQ">选择复习模式开始！</div>
+      <div class="choices" id="quizChoices"></div>
+      <div class="feedback" id="quizFeedback"></div>
+      <div class="actions">
+        <button class="btn" onclick="nextQuiz()">下一题</button>
+        <button class="btn secondary" onclick="switchTab('learn')">回到学习</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 错词本 -->
+  <div id="errors" class="panel">
+    <div class="progress">
+      <h3>🩹 错词本</h3>
+      <div class="filter-bar">
+        <label>类型：</label>
+        <select id="errorFilter" onchange="renderErrors()">
+          <option value="all">全部</option>
+          <option value="char">字词错误</option>
+          <option value="read">阅读错误</option>
+          <option value="quiz">测验错误</option>
+        </select>
+        <button class="btn secondary" onclick="clearErrors()" style="font-size:12px;">清空</button>
+      </div>
+      <div id="errorList"></div>
+    </div>
+  </div>
+
+  <!-- 进度 -->
+  <div id="progress" class="panel">
+    <div class="progress">
+      <h3>每日贴纸墙 🏅</h3>
+      <div class="stars" id="starWall">还没有星星哦，快去学习吧！</div>
+    </div>
+    <div class="progress">
+      <h3>已学会的生字</h3>
+      <div class="grid" id="masteredGrid"></div>
+    </div>
+    <div class="progress">
+      <h3>还需要加强的字</h3>
+      <div class="grid" id="weakGrid"></div>
+    </div>
+    <div class="progress">
+      <h3>本周学习统计</h3>
+      <div class="stats" id="weeklyStats"></div>
+    </div>
+  </div>
+
+  <!-- 写话 -->
+  <div id="write" class="panel">
+    <div class="quiz" id="writeBox">
+      <div class="q" id="writeQ"></div>
+      <div style="font-size:13px;color:#636e72;margin-bottom:8px;">用上给出的字，写一句完整的话。</div>
+      <input id="writeAnswer" placeholder="在这里写句子..." />
+      <div class="answer-slot">
+        <button class="btn" onclick="checkWrite()">检查</button>
+        <button class="btn secondary" onclick="nextWrite()">换一题</button>
+      </div>
+      <div class="feedback" id="writeFeedback"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 数据：全册 8 课 =====
+const DATA = {
+  lessons: [
+    {
+      id:11, name:"第11课 · 前后左右",
+      chars:[
+        {c:"后",w:true},{c:"左",w:true},{c:"右",w:true},{c:"中",w:true},{c:"间",w:true},{c:"面",w:true},{c:"同",w:true},{c:"学",w:true},{c:"朋",w:true},{c:"友",w:true},{c:"坐",w:true},{c:"高",w:true},{c:"发",w:true},{c:"直",w:true},{c:"起",w:true},{c:"回",w:true},{c:"周",w:true},{c:"末",w:true},
+        {c:"甲",w:false},{c:"丁",w:false},{c:"前",w:false},{c:"边",w:false},{c:"画",w:false}
+      ],
+      read:[
+        {title:"课文片段",text:"早上，同学们在教室里。小明坐在座位上，他的前面是小华，后面是小刚。左边是窗户，右边是门。老师请小明回答问题。小明站起来，大声回答。老师很高兴，说：“答对了！”同学们都笑了。下课铃响了，大家一起出去玩。",questions:["小明坐在哪里？","小明前面是谁？","小明右边是什么？","老师请小明做什么？","小明回答后老师说什么？"],answers:["座位上","小华","门","回答问题","答对了"]}
+      ],
+      write:[
+        {hint:"上课时同学坐在教室里。",words:["坐","同","学"],sample:"同学们坐在教室里。"},
+        {hint:"今天的天气很热。",words:["高","直","起"],sample:"太阳高挂在天空。"},
+        {hint:"周末去公园玩。",words:["周","末","回"],sample:"周末我们一起回家。"}
+      ]
+    },
+    {
+      id:12, name:"第12课 · 吃东西",
+      chars:[
+        {c:"包",w:true},{c:"半",w:true},{c:"元",w:true},{c:"吃",w:true},{c:"干",w:true},{c:"肉",w:true},{c:"虫",w:true},{c:"今",w:true},{c:"米",w:true},{c:"豆",w:true},
+        {c:"鸡",w:false},{c:"饭",w:false},{c:"鸭",w:false},{c:"饿",w:false},{c:"饱",w:false},{c:"饼",w:false},{c:"狗",w:false},{c:"喜",w:false},{c:"欢",w:false},{c:"猫",w:false},{c:"采",w:false},{c:"歌",w:false},{c:"唱",w:false},{c:"青",w:false},{c:"菜",w:false},{c:"汤",w:false},{c:"蛋",w:false},{c:"香",w:false}
+      ],
+      read:[
+        {title:"阅读理解 · 吃东西",text:"今天早上，妈妈很早就起床做早饭。厨房里飘出香味，有鸡蛋、米饭和青菜。弟弟闻到香味，马上跑到餐桌前。他饿极了，吃了很多饭和菜，肚子吃得饱饱的。小狗在桌子下面摇尾巴，它最喜欢吃肉和饼干。小猫也悄悄走过来，它不吃肉，只吃鱼。大家围着桌子，吃得开心，笑得开心。",questions:["早上妈妈做了什么？","弟弟吃了什么，觉得怎样？","小狗喜欢吃什么？","小猫吃什么？","大家吃饭时心情怎样？"],answers:["做早饭","很多，很饱","肉和饼干","鱼","开心"]},
+        {title:"阅读理解 · 买东西",text:"星期六早上，妈妈带我到巴刹买东西。我们先买了一个面包，又买了半斤肉和一些青菜。老板还送了我们一根玉米。一共花了十元钱。回家的路上，我闻到面包很香。妈妈说：“以后买东西要先看价格，再付钱。”我点点头，把找回的钱放好。",questions:["妈妈带我去哪里？","买了什么？","花了多少钱？","老板还送了什么东西？","妈妈教了我什么？"],answers:["巴刹","面包、肉、青菜","十元","玉米","买东西要先看价格，再付钱"]}
+      ],
+      write:[
+        {hint:"早饭有鸡蛋、米饭、青菜。",words:["吃","米","菜"],sample:"我吃米饭和青菜。"},
+        {hint:"弟弟在吃东西。",words:["吃","包","干"],sample:"弟弟吃面包和饼干。"},
+        {hint:"小动物们饿了。",words:["饿","饱","肉"],sample:"小狗饿了，想吃肉。"}
+      ]
+    },
+    {
+      id:13, name:"第13课 · 洗脸刷牙",
+      chars:[
+        {c:"用",w:true},{c:"牙",w:true},{c:"巾",w:true},{c:"以",w:true},{c:"要",w:true},{c:"东",w:true},{c:"西",w:true},{c:"雨",w:true},{c:"马",w:true},{c:"先",w:true},{c:"点",w:true},
+        {c:"刷",w:false},{c:"抹",w:false},{c:"放",w:false},{c:"冲",w:false},{c:"凉",w:false},{c:"到",w:false},{c:"请",w:false},{c:"很",w:false},{c:"泡",w:false},{c:"变",w:false},{c:"谢",w:false}
+      ],
+      read:[
+        {title:"阅读理解 · 洗脸刷牙",text:"下午，小明放学回到家。妈妈叫他先去洗手，然后洗脸、刷牙。小明打开水龙头，用毛巾抹了脸。水有点凉，他缩了一下脖子，然后笑了。他拿起牙刷，仔细地刷每一颗牙。刷完牙，他跑到妈妈面前，张大嘴巴让妈妈看。妈妈摸着他的头说：“牙齿刷得很干净，真棒！”",questions:["小明回到家要做什么？","妈妈用什么帮他抹脸？","他去冲凉，水是怎样的？","妈妈说他干净吗？","小明刷完牙后做了什么？"],answers:["洗脸、刷牙","毛巾","很凉","是，很干净","跑到妈妈面前让妈妈看"]}
+      ],
+      write:[
+        {hint:"小明在卫生间做日常事。",words:["洗","脸","牙"],sample:"小明洗脸和刷牙。"},
+        {hint:"妈妈手里拿着布。",words:["毛","巾","帮"],sample:"妈妈用毛巾帮我擦脸。"},
+        {hint:"天气变冷了。",words:["很","凉","笑"],sample:"水很凉，小明笑了。"}
+      ]
+    },
+    {
+      id:14, name:"第14课 · 穿衣服",
+      chars:[
+        {c:"是",w:true},{c:"皮",w:true},{c:"衣",w:true},{c:"和",w:true},{c:"里",w:true},{c:"尺",w:true},{c:"还",w:true},{c:"自",w:true},{c:"己",w:true},{c:"好",w:true},
+        {c:"这",w:false},{c:"双",w:false},{c:"袜",w:false},{c:"那",w:false},{c:"件",w:false},{c:"服",w:false},{c:"被",w:false},{c:"色",w:false},{c:"红",w:false},{c:"都",w:false},{c:"动",w:false},{c:"作",w:false},{c:"快",w:false},{c:"收",w:false},{c:"拾",w:false},{c:"穿",w:false},{c:"事",w:false},{c:"做",w:false}
+      ],
+      read:[
+        {title:"阅读理解 · 穿衣服",text:"今天是星期日，天气很好。妈妈走进我的房间，说：“今天我们一起出去玩。”她帮我穿上蓝色的衣服和裤子，又拿来一双红色的皮鞋。我穿上鞋，走到镜子前面照了照，觉得自己很好看。这时，哥哥也穿好了衣服。他对我说：“动作快点，不然要迟到了。”我高兴地回答说：“来了！”我们一起走出家门。",questions:["今天是什么日子？","妈妈帮我穿了什么？","我的皮鞋是什么颜色？","哥哥穿好了吗？","我们最后做了什么？"],answers:["星期日","衣服、裤子","红色","是","走出家门"]}
+      ],
+      write:[
+        {hint:"出门前要穿整齐。",words:["穿","衣","服"],sample:"妈妈帮我穿衣服。"},
+        {hint:"这双鞋的颜色。",words:["红","色","鞋"],sample:"我的皮鞋是红色的。"},
+        {hint:"这衣服怎么样？",words:["好","看","件"],sample:"这件衣服很好看。"}
+      ]
+    },
+    {
+      id:15, name:"第15课 · 买水果",
+      chars:[
+        {c:"生",w:true},{c:"果",w:true},{c:"汁",w:true},{c:"买",w:true},{c:"斤",w:true},{c:"它",w:true},{c:"办",w:true},{c:"法",w:true},{c:"看",w:true},
+        {c:"甜",w:false},{c:"苦",w:false},{c:"臭",w:false},{c:"重",w:false},{c:"喝",w:false},{c:"甘",w:false},{c:"串",w:false},{c:"弯",w:false},{c:"选",w:false},{c:"最",w:false},{c:"抱",w:false},{c:"拿",w:false},{c:"圆",w:false},{c:"切",w:false},{c:"怎",w:false}
+      ],
+      read:[
+        {title:"课文片段 · 买水果",text:"星期天早上，天气很热，妈妈带我到巴刹买水果。一进市场，我就看到很多红色的苹果、黄色的香蕉和紫色的葡萄。我还看见了一个又大又圆的西瓜。我挑了一个大西瓜，又选了一斤红红的草莓。草莓放进嘴里，甜甜的，真好吃。回家的路上，我抱着西瓜，心里可高兴了。",questions:["妈妈带我去哪里？","买了什么水果？","草莓的味道怎样？","我抱着什么回家？","我心情怎样？"],answers:["巴刹","苹果、香蕉、葡萄、西瓜、草莓","很甜","西瓜","高兴"]}
+      ],
+      write:[
+        {hint:"我喜欢吃水果。",words:["吃","水","果"],sample:"我喜欢吃水果。"},
+        {hint:"妈妈买了很多东西。",words:["买","斤","它"],sample:"妈妈买了一斤苹果。"},
+        {hint:"苹果又甜又脆。",words:["甜","苦","看"],sample:"这个苹果很甜。"}
+      ]
+    },
+    {
+      id:16, name:"第16课 · 做家务",
+      chars:[
+        {c:"父",w:true},{c:"母",w:true},{c:"她",w:true},{c:"他",w:true},{c:"会",w:true},{c:"你",w:true},{c:"们",w:true},{c:"爸",w:true},{c:"妈",w:true},{c:"打",w:true},
+        {c:"扫",w:false},{c:"户",w:false},{c:"桌",w:false},{c:"椅",w:false},{c:"兄",w:false},{c:"房",w:false},{c:"阿",w:false},{c:"叔",w:false},{c:"写",w:false},{c:"啊",w:false},{c:"完",w:false},{c:"业",w:false},{c:"躲",w:false},{c:"进",w:false},{c:"净",w:false},{c:"谁",w:false},{c:"听",w:false},{c:"声",w:false}
+      ],
+      read:[
+        {title:"课文片段 · 做家务",text:"星期六上午，爸爸拿起扫帚扫地，妈妈用抹布擦桌子。哥哥坐在书桌前写作业，他的作业本翻到第二十三页。我听见妈妈在厨房忙，就跑过去帮忙。我拿起小扫帚，把客厅的地板扫得很干净。爸爸停下来，笑着对我说：“你真是个小帮手！”我听了，心里美滋滋的。",questions:["爸爸在做什么？","哥哥在做什么？","我也做了什么？","爸爸说什么？","我听了之后觉得怎样？"],answers:["扫地","写作业","帮忙扫地","你真是个小帮手","美滋滋"]}
+      ],
+      write:[
+        {hint:"我的爸爸妈妈很爱我。",words:["爸","妈","爱"],sample:"我爱爸爸妈妈。"},
+        {hint:"我和同学们一起玩。",words:["你","们","朋"],sample:"你和我们一起玩吗？"},
+        {hint:"我会自己穿衣服。",words:["会","自","己"],sample:"我会自己穿衣服。"}
+      ]
+    },
+    {
+      id:17, name:"第17课 · 生日快乐",
+      chars:[
+        {c:"昨",w:true},{c:"明",w:true},{c:"给",w:true},{c:"快",w:true},{c:"乐",w:true},{c:"没",w:true},{c:"有",w:true},{c:"这",w:true},{c:"老",w:true},{c:"师",w:true},{c:"每",w:true},
+        {c:"晚",w:false},{c:"星",w:false},{c:"庆",w:false},{c:"祝",w:false},{c:"节",w:false},{c:"爱",w:false},{c:"国",w:false},{c:"课",w:false},{c:"台",w:false},{c:"讲",w:false},{c:"故",w:false},{c:"童",w:false},{c:"因",w:false},{c:"为",w:false}
+      ],
+      read:[
+        {title:"课文片段 · 生日快乐",text:"今天是明明的八岁生日。昨晚，他在客厅里挂了很多气球和彩带。今天早上，妈妈给他煮了一碗长寿面。到学校后，老师给全班同学讲了一个有趣的故事。放学回家，明明收到了一套故事书和一盒彩色笔。晚上，全家人一起唱生日歌，明明许了一个愿望，然后吹蜡烛。大家吃着蛋糕，说明天真快乐。",questions:["今天是谁的生日？","昨晚他做了什么？","老师做了什么？","明明许了什么？","大家觉得怎样？"],answers:["明明","挂气球和彩带","讲故事","愿望","快乐"]}
+      ],
+      write:[
+        {hint:"今天是星期一。",words:["今","天","快"],sample:"今天是星期一。"},
+        {hint:"我很开心。",words:["快","乐","老"],sample:"生日快乐！"},
+        {hint:"老师给我们上课。",words:["老","师","每"],sample:"每位老师都很用心。"}
+      ]
+    },
+    {
+      id:18, name:"第18课 · 去动物园",
+      chars:[
+        {c:"爪",w:true},{c:"尖",w:true},{c:"气",w:true},{c:"玩",w:true},{c:"我",w:true},{c:"弟",w:true},{c:"妹",w:true},{c:"站",w:true},{c:"叫",w:true},{c:"再",w:true},
+        {c:"兔",w:false},{c:"尾",w:false},{c:"短",w:false},{c:"眼",w:false},{c:"睛",w:false},{c:"物",w:false},{c:"虎",w:false},{c:"狮",w:false},{c:"园",w:false},{c:"期",w:false},{c:"带",w:false},{c:"黑",w:false},{c:"认",w:false},{c:"话",w:false},{c:"孩",w:false}
+      ],
+      read:[
+        {title:"课文片段 · 去动物园",text:"星期天早上，爸爸带我和弟弟去动物园。我们先看了大象，它的鼻子很长，正在吃香蕉。接着，我们去看狮子，它的爪子很尖，正躺在石头上休息。弟弟指着老虎说：“它的毛黑黑的，好威风。”我们还看了长颈鹿、猴子和熊猫。弟弟高兴得跳起来。回来的路上，爸爸说：“我们要爱护动物，不要打扰它们。”",questions:["星期天去了哪里？","看到了什么动物？","谁说的下次再来？","弟弟为什么高兴？","爸爸说了什么？"],answers:["动物园","大象、狮子、老虎、长颈鹿、猴子、熊猫","爸爸","看到很多动物","要爱护动物，不要打扰它们"]}
+      ],
+      write:[
+        {hint:"小兔子很可爱。",words:["兔","子","可"],sample:"小兔子长着短尾巴。"},
+        {hint:"我和弟弟妹妹一起去玩。",words:["我","弟","妹"],sample:"我和弟弟去公园玩。"},
+        {hint:"不要站在笼子外面叫。",words:["站","叫","再"],sample:"请不要站在笼子外面叫。"}
+      ]
+    },
+    {
+      id:19, name:"第19课 · 在公园",
+      chars:[
+        {c:"公",w:true},{c:"园",w:true},{c:"姐",w:true},{c:"哥",w:true},{c:"引",w:true},{c:"起",w:true},{c:"高",w:true},{c:"兴",w:true},{c:"心",w:true},
+        {c:"组",w:false},{c:"屋",w:false},{c:"校",w:false},{c:"场",w:false},{c:"商",w:false},{c:"店",w:false},{c:"梯",w:false},{c:"扶",w:false},{c:"常",w:false},{c:"球",w:false},{c:"步",w:false},{c:"图",w:false},{c:"习",w:false},{c:"伙",w:false},{c:"伴",w:false},{c:"游",w:false},{c:"拍",w:false},{c:"兴",w:false},{c:"戏",w:false}
+      ],
+      read:[
+        {title:"课文片段 · 在公园",text:"星期天早上，天气很凉爽，姐姐带我去附近的公园玩。一进公园，我就听到鸟叫声。公园里有一个大草坪，还有很多人在散步。我们玩了滑梯、秋千，又看了小朋友在踢足球。姐姐还带我去喂鱼，我把面包屑撒进水里，鱼群马上游过来抢吃。我笑得特别开心。离开时，我回头对公园说：“下次我还要来！”",questions:["谁带你去公园？","公园里有什么？","我们做了什么？","我喂了什么？","我开心吗？"],answers:["姐姐","滑梯、秋千、草坪、鱼","玩滑梯、秋千、喂鱼","鱼","开心"]}
+      ],
+      write:[
+        {hint:"我和姐姐一起去公园。",words:["公","园","姐"],sample:"姐姐带我去公园。"},
+        {hint:"我很开心。",words:["高","兴","心"],sample:"今天我很开心。"},
+        {hint:"同学们一起玩。",words:["伙","伴","游"],sample:"我和好伙伴一起玩游戏。"}
+      ]
+    }
+  ],
+  quizzes: [
+    // 字义题
+    {q:"“前后”是指两个相反的？", choices:["方向","颜色","数字","味道"], a:0, lesson:11},
+    {q:"“同学”是指什么？", choices:["一起上学的人","兄弟姐妹","老师","邻居"], a:0, lesson:11},
+    {q:"“周末”一般是指哪两天？", choices:["星期六和日","星期五和六","星期日和一","星期六和一"], a:0, lesson:11},
+    {q:"“饿”的感觉是？", choices:["肚子空想吃东西","很累","很渴","想睡觉"], a:0, lesson:12},
+    {q:"“饱”和哪个意思相反？", choices:["饿","开心","冷","累"], a:0, lesson:12},
+    {q:"“小狗”最可能吃什么？", choices:["肉和骨头","米饭","青菜","水果"], a:0, lesson:12},
+    {q:"“刷牙”用的是什么？", choices:["牙刷","毛巾","梳子","肥皂"], a:0, lesson:13},
+    {q:"“冲凉”是指？", choices:["洗澡","喝水","睡觉","跑步"], a:0, lesson:13},
+    {q:"“洗脸”的部位是？", choices:["脸","手","脚","头"], a:0, lesson:13},
+    {q:"“穿衣服”前要先？", choices:["找衣服","睡觉","吃饭","洗澡"], a:0, lesson:14},
+    {q:"“皮鞋”通常是做什么的？", choices:["穿在脚上","拿在手里","戴在头上","挂在墙上"], a:0, lesson:14},
+    {q:"“袜子”穿在哪里？", choices:["脚上","手上","头上","脖子上"], a:0, lesson:14},
+    {q:"“水果”可以吃什么？", choices:["生吃","煮","炒","炸"], a:0, lesson:15},
+    {q:"“草莓”的味道通常是？", choices:["甜","咸","苦","辣"], a:0, lesson:15},
+    {q:"“西瓜”是什么颜色的？", choices:["绿色皮红色肉","全红","全绿","黄色"], a:0, lesson:15},
+    {q:"“爸爸”是我什么人？", choices:["父亲","祖父","叔叔","哥哥"], a:0, lesson:16},
+    {q:"“妈妈”是我什么人？", choices:["母亲","祖母","阿姨","姐姐"], a:0, lesson:16},
+    {q:"“扫地”用什么？", choices:["扫帚","牙刷","毛巾","梳子"], a:0, lesson:16},
+    {q:"“生日”是指？", choices:["出生的那天","节日","周末","新年"], a:0, lesson:17},
+    {q:"“老师”的工作是？", choices:["教学生","扫地","做饭","开车"], a:0, lesson:17},
+    {q:"“动物园”里有什么？", choices:["动物","植物","汽车","飞机"], a:0, lesson:18},
+    {q:"“老虎”是什么动物？", choices:["猛兽","宠物","鸟","鱼"], a:0, lesson:18},
+    {q:"“公园”是做什么的地方？", choices:["游玩休息","工作","学习","睡觉"], a:0, lesson:19},
+    {q:"“开心”的反义词是？", choices:["难过","高兴","快乐","兴奋"], a:0, lesson:19},
+    // 笔顺/偏旁类
+    {q:"“吃”字的部首是？", choices:["口","饣","乞","气"], a:1, lesson:12},
+    {q:"“跑”字的部首是？", choices:["⻊","足","走","亻"], a:0, lesson:null},
+    {q:"“想”字的部首是？", choices:["心","木","相","目"], a:0, lesson:null},
+    {q:"“拿”字的部首是？", choices:["手","合","口","人"], a:1, lesson:15},
+    {q:"“园”字的部首是？", choices:["囗","元","口","儿"], a:0, lesson:19},
+    // 课文细节
+    {q:"第12课里，小猫吃什么？", choices:["鱼","肉","骨头","草"], a:0, lesson:12},
+    {q:"第13课里，谁帮小明抹脸？", choices:["妈妈","爸爸","老师","姐姐"], a:0, lesson:13},
+    {q:"第14课里，哥哥穿好了吗？", choices:["穿好了","没穿","正在穿","不知道"], a:0, lesson:14},
+    {q:"第15课里，草莓的味道？", choices:["甜","苦","咸","酸"], a:0, lesson:15},
+    {q:"第16课里，爸爸在做什么？", choices:["扫地","煮饭","开车","睡觉"], a:0, lesson:16},
+    {q:"第18课里，谁带我去动物园？", choices:["爸爸","妈妈","老师","同学"], a:0, lesson:18},
+    {q:"第19课里，谁带我去公园？", choices:["姐姐","哥哥","妈妈","爸爸"], a:0, lesson:19},
+    // 量词
+    {q:"一只什么？", choices:["猫","人","桌子","书"], a:0, lesson:12},
+    {q:"一条什么？", choices:["鱼","人","桌子","书"], a:0, lesson:12},
+    {q:"一头什么？", choices:["大象","猫","人","桌子"], a:0, lesson:18},
+    {q:"一座什么？", choices:["山/公园","猫","人","桌子"], a:0, lesson:19},
+  ],
+  writePrompts: [
+    {hint:"看图：小朋友坐在教室里。",words:["坐","同","学"],sample:"同学们坐在教室里听老师上课。"},
+    {hint:"看图：妈妈做早饭。",words:["吃","米","菜"],sample:"我吃米饭和青菜。"},
+    {hint:"看图：小狗饿了。",words:["饿","饱","肉"],sample:"小狗饿了想吃肉。"},
+    {hint:"看图：小朋友在卫生间。",words:["洗","脸","牙"],sample:"我用毛巾洗脸和刷牙。"},
+    {hint:"看图：天气变冷了。",words:["很","凉","笑"],sample:"水很凉，我笑了。"},
+    {hint:"看图：妈妈帮穿衣服。",words:["穿","衣","服"],sample:"妈妈帮我穿衣服。"},
+    {hint:"看图：这是一双红鞋。",words:["红","色","鞋"],sample:"这双皮鞋是红色的。"},
+    {hint:"看图：妈妈买水果。",words:["买","斤","果"],sample:"妈妈买了一斤苹果。"},
+    {hint:"看图：爸爸在扫地。",words:["扫","地","爸"],sample:"爸爸在扫地。"},
+    {hint:"看图：今天是星期三。",words:["今","天","快"],sample:"今天是星期三。"},
+    {hint:"看图：我们去动物园。",words:["园","动","物"],sample:"我们去动物园看动物。"},
+    {hint:"看图：在公园玩滑梯。",words:["公","园","玩"],sample:"我们在公园玩滑梯。"}
+  ]
+};
+
+// ===== 状态 =====
+const LS = {
+  get(k,d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+};
+
+let state = LS.get("bobo_state_v3", {
+  stars: 0,
+  mastered: [],
+  weak: [],
+  readDone: [],
+  writeDone: [],
+  days: [],
+  stickers: [],
+  errors: [],
+  quizScore: 0,
+  quizTotal: 0,
+  currentLesson: 11
+});
+
+// clear old storage
+LS.set("bobo_state_v2", {
+  stars: 0,
+  mastered: [],
+  weak: [],
+  readDone: [],
+  writeDone: [],
+  days: [],
+  stickers: [],
+  errors: [],
+  quizScore: 0,
+  quizTotal: 0,
+  currentLesson: 11
+});
+
+function save(){ LS.set("bobo_state_v3", state); updateUI(); }
+function syncUp(){
+  fetch("/api/state",{method:"POST",body:JSON.stringify(state),headers:{"Content-Type":"application/json"}}).then(r=>r.text()).then(t=>alert("已同步到云端：\n"+t)).catch(e=>alert("同步失败："+e));
+}
+function syncDown(){
+  if(!confirm("云端进度会覆盖当前本地进度，确定吗？")) return;
+  fetch("/api/state").then(r=>r.json()).then(d=>{ state = d ?? state; save(); alert("已恢复云端进度。"); }).catch(e=>alert("恢复失败："+e));
+}
+window.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("btnSyncUp")?.addEventListener("click", syncUp);
+  document.getElementById("btnSyncDown")?.addEventListener("click", syncDown);
+});
+
+function today(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function addStar(n=1){
+  state.stars += n;
+  const t = today();
+  if(!state.days.includes(t)) state.days.push(t);
+  const st = {date:t, emoji:["⭐","🌟","🎉","🌈","🦄","🍕","🎈","🏆","🎈","🌟"][Math.floor(Math.random()*10)]};
+  state.stickers.unshift(st);
+  if(state.stickers.length>50) state.stickers = state.stickers.slice(0,50);
+  save();
+}
+
+function addError(type, text){
+  const e = {type, text, time: new Date().toLocaleString("zh-CN", {timeZone:"Asia/Singapore"})};
+  state.errors.unshift(e);
+  if(state.errors.length>200) state.errors = state.errors.slice(0,200);
+  save();
+}
+
+function tabDone(prefix, lessonId, idx){
+  const key = `${prefix}_${lessonId}_${idx}`;
+  if(!state[prefix].includes(key)){ state[prefix].push(key); addStar(); save(); }
+}
+
+function isTabDone(prefix, lessonId, idx){
+  return state[prefix].includes(`${prefix}_${lessonId}_${idx}`);
+}
+
+function allChars(){
+  const set = new Set();
+  DATA.lessons.forEach(l=>l.chars.forEach(ch=>set.add(ch.c)));
+  return [...set];
+}
+
+function charsByLesson(lessonId){
+  const L = DATA.lessons.find(l=>l.id===lessonId);
+  return L ? L.chars : [];
+}
+
+function updateUI(){
+  document.getElementById("starBadge").textContent = `⭐ ${state.stars}`;
+  const totalDays = state.days.length;
+  document.getElementById("streakBadge").textContent = `🔥 ${totalDays}天`;
+  document.getElementById("badgeLesson").textContent = `第11-19课`;
+
+  const total = allChars().length;
+  const masteredCount = state.mastered.length;
+  const pct = Math.round((masteredCount/total)*100);
+  document.getElementById("totalBar").style.width = pct+"%";
+  document.getElementById("statChars").textContent = `${masteredCount}/${total}`;
+  const readTotal = DATA.lessons.reduce((a,l)=>a+l.read.length,0);
+  document.getElementById("statRead").textContent = `${state.readDone.length}/${readTotal}`;
+  const writeTotal = DATA.lessons.reduce((a,l)=>a+l.write.length,0);
+  document.getElementById("statWrite").textContent = `${state.writeDone.length}/${writeTotal}`;
+  document.getElementById("statDays").textContent = totalDays;
+
+  renderLessons();
+  renderMastered();
+  renderStarWall();
+  renderErrors();
+  renderWeekly();
+}
+
+function renderLessons(){
+  // Lesson tabs
+  const tabs = document.getElementById("lessonTabs");
+  tabs.innerHTML = DATA.lessons.map(L=>`
+    <button class="lesson-tab ${state.currentLesson===L.id?'active':''}" onclick="setLesson(${L.id})">${L.name}</button>
+  `).join("");
+
+  const L = DATA.lessons.find(l=>l.id===state.currentLesson);
+  if(!L) return;
+  const el = document.getElementById("lessonContent");
+  el.innerHTML = `
+    <div class="lesson-section">
+      <h3>${L.name}</h3>
+      <h4 style="margin:8px 0 6px;color:#636e72;">📖 生字总表</h4>
+      <div class="grid">
+        ${L.chars.map(ch=>`
+          <div class="card" onclick="toggleMastered('${ch.c}')">
+            <div class="char">${ch.c}</div>
+            <div class="meta">${ch.w?"书写字":"识读字"} · ${getStroke(ch.c)}画</div>
+            <div class="tags">
+              <span class="tag ${ch.w?'write':''}">${ch.w?"会写":"认识"}</span>
+              <span class="tag ${state.mastered.includes(ch.c)?'done':''}">${state.mastered.includes(ch.c)?"✅已掌握":"未标记"}</span>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+    <div class="lesson-section">
+      <h4 style="margin:10px 0 6px;color:#636e72;">📝 阅读理解</h4>
+      ${L.read.map((r,ri)=>`
+        <div style="margin-bottom:14px;">
+          <div style="font-weight:bold;margin-bottom:6px;">${r.title}</div>
+          <div class="reading">${r.text}</div>
+          <div style="margin-top:8px;">
+            ${r.questions.map((q,qi)=>`
+              <div class="question">
+                <div class="prompt">${qi+1}. ${q}</div>
+                <div class="answer-slot">
+                  <input data-l="${L.id}" data-r="${ri}" data-qi="${qi}" placeholder="写答案..."
+                    class="read-input" value="" />
+                  <button class="btn" style="padding:7px 10px;font-size:12px;" onclick="checkRead(this)">核对</button>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+    <div class="lesson-section">
+      <h4 style="margin:10px 0 6px;color:#636e72;">✍️ 写话练习</h4>
+      ${L.write.map((w,wi)=>`
+        <div style="margin-bottom:10px;padding:10px;background:#f8f9fa;border-radius:10px;">
+          <div style="font-weight:bold;margin-bottom:4px;">练习 ${wi+1}</div>
+          <div style="font-size:13px;color:#636e72;margin-bottom:4px;">${w.hint}</div>
+          <div style="font-size:13px;color:#6c5ce7;">用上：${w.words.join("、")}</div>
+          <div class="answer-slot">
+            <input data-l="${L.id}" data-w="${wi}" placeholder="在这里写句子..." class="write-input" value="" />
+            <button class="btn" style="padding:7px 10px;font-size:12px;" onclick="checkWriteLesson(this)">检查</button>
+          </div>
+          <div class="feedback" style="margin-top:6px;"></div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function getStroke(c){
+  // 简易笔画字典（常用字），无数据返回 ?
+  const map = {"一":1,"二":2,"三":3,"十":2,"口":3,"日":4,"月":4,"人":2,"大":3,"小":3,"中":4,"上":3,"下":3,"山":3,"水":4,"火":4,"木":4,"禾":5,"土":3,"王":4,"天":4,"开":4,"目":5,"耳":6,"田":5,"虫":6,"豆":7,"米":6,"心":4,"手":4,"足":7,"牙":4,"用":5,"要":9,"是":9,"好":6,"学":8,"同":6,"朋":8,"友":4,"高":10,"坐":7,"回":6,"包":5,"半":6,"吃":6,"干":3,"肉":6,"今":4,"鸡":7,"饭":7,"鸭":10,"饿":9,"饱":8,"饼":9,"狗":8,"喜":12,"欢":6,"猫":11,"采":8,"歌":14,"唱":11,"青":8,"菜":11,"汤":6,"蛋":11,"香":9,"刷":8,"巾":3,"抹":8,"洗":9,"脸":11,"冲":6,"凉":10,"东":5,"西":6,"雨":8,"马":3,"先":6,"点":9,"这":7,"双":4,"袜":10,"那":6,"皮":5,"衣":6,"件":6,"服":8,"被":10,"色":6,"红":6,"都":10,"动":6,"作":7,"快":7,"收":6,"拾":9,"穿":9,"事":8,"做":11,"甜":11,"苦":8,"臭":10,"重":9,"喝":12,"甘":5,"汁":5,"买":6,"串":7,"弯":9,"选":9,"最":12,"抱":8,"拿":10,"圆":10,"切":4,"怎":9,"扫":6,"户":4,"桌":10,"椅":12,"兄":6,"房":8,"叔":8,"写":5,"完":7,"业":2,"躲":13,"进":6,"净":8,"谁":8,"声":7,"晚":11,"星":9,"明":8,"庆":6,"祝":9,"节":5,"爱":10,"给":9,"乐":5,"没":7,"有":6,"老":6,"师":6,"每":7,"兔":8,"尾":7,"短":12,"眼":11,"睛":13,"物":8,"虎":8,"狮":9,"园":7,"期":12,"带":9,"黑":12,"站":10,"叫":5,"再":6,"孩":9,"组":8,"屋":9,"校":10,"场":6,"商":11,"店":8,"梯":11,"扶":7,"常":11,"球":11,"步":7,"图":8,"习":3,"伙":6,"伴":8,"游":12,"拍":8,"戏":6};
+  return map[c] ?? "?";
+}
+
+function setLesson(id){
+  state.currentLesson = id;
+  save();
+}
+
+function checkRead(btn){
+  const input = btn.previousElementSibling;
+  const li = +input.dataset.l, ri = +input.dataset.r, qi = +input.dataset.qi;
+  const answer = input.value.trim();
+  const L = DATA.lessons.find(l=>l.id===li);
+  const correct = L.read[ri].answers[qi];
+  if(!answer){ input.focus(); return; }
+  if(answer.includes(correct) || correct.includes(answer)){
+    input.classList.add("correct"); input.classList.remove("wrong");
+    tabDone("readDone", li, ri);
+  } else {
+    input.classList.add("wrong"); input.classList.remove("correct");
+    addError("read", `第${li}课阅读：${L.read[ri].questions[qi]} — 你的答案：${answer}，正确答案：${correct}`);
+  }
+}
+
+function checkWriteLesson(btn){
+  const input = btn.previousElementSibling;
+  const li = +input.dataset.l, wi = +input.dataset.w;
+  const L = DATA.lessons.find(l=>l.id===li);
+  const w = L.write[wi];
+  const val = input.value.trim();
+  const fb = input.parentElement.nextElementSibling;
+  if(!val){ fb.textContent = "先写一句话哦～"; input.focus(); return; }
+  const hasWord = w.words.some(word=>val.includes(word));
+  const len = val.length;
+  if(hasWord && len>=4){
+    fb.innerHTML = `✅ 不错！参考：${w.sample}`;
+    tabDone("writeDone", li, wi);
+  } else {
+    fb.innerHTML = `💡 试试参考：${w.sample}`;
+    addError("char", `第${li}课写话：${w.words.join("/")} — 句子：${val}`);
+  }
+}
+
+function toggleMastered(c){
+  const i = state.mastered.indexOf(c);
+  if(i>=0){ state.mastered.splice(i,1); }
+  else { state.mastered.push(c); addStar(1); }
+  state.weak = state.weak.filter(x=>x!==c);
+  save();
+}
+
+function renderMastered(){
+  const all = allChars();
+  document.getElementById("masteredGrid").innerHTML = state.mastered.map(c=>
+    `<div class="card"><div class="char">${c}</div><div class="tags"><span class="tag done">✅ 已掌握</span></div></div>`
+  ).join("") || "<div class='empty'>还没有标记，点击生字可标记。</div>";
+  const weak = all.filter(c=>!state.mastered.includes(c));
+  document.getElementById("weakGrid").innerHTML = weak.map(c=>
+    `<div class="card"><div class="char">${c}</div><div class="tags"><span class="tag weak">📖 复习</span></div></div>`
+  ).join("") || "<div class='empty' style='color:#00b894;'>太棒了，全部已掌握！</div>";
+}
+
+function renderStarWall(){
+  const el = document.getElementById("starWall");
+  if(!state.stickers.length){ el.textContent = "还没有星星哦，快去学习吧！"; return; }
+  el.innerHTML = state.stickers.map(s=>`<span title="${s.date}">${s.emoji}</span>`).join(" ");
+}
+
+function renderWeekly(){
+  const el = document.getElementById("weeklyStats");
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+  const wa = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth()+1).padStart(2,'0')}-${String(weekAgo.getDate()).padStart(2,'0')}`;
+  const weekDays = state.days.filter(d=>d>=wa).length;
+  const weekStars = state.stickers.filter(s=>s.date>=wa).length;
+  el.innerHTML = `
+    <div class="stat"><div class="num">${weekDays}</div><div class="lbl">本周学习天数</div></div>
+    <div class="stat"><div class="num">${weekStars}</div><div class="lbl">本周贴纸数</div></div>
+    <div class="stat"><div class="num">${state.stars}</div><div class="lbl">累计星星</div></div>
+  `;
+}
+
+// ===== Quiz =====
+let quiz = null;
+let quizMode = "all"; // all | weak | lesson
+let quizState = null; // {pool, i, score}
+
+function startQuiz(){
+  let pool;
+  if(quizMode === "weak"){
+    const weakChars = allChars().filter(c=>!state.mastered.includes(c));
+    pool = DATA.quizzes.filter(q=>q.lesson===null || weakChars.some(c=>q.q.includes(c)));
+    if(!pool.length) pool = DATA.quizzes.slice(0,8);
+  } else if(quizMode === "lesson"){
+    const L = DATA.lessons.find(l=>l.id===state.currentLesson);
+    const lChars = L.chars.map(c=>c.c);
+    pool = DATA.quizzes.filter(q=>q.lesson===null || q.lesson===state.currentLesson || lChars.some(c=>q.q.includes(c)));
+  } else {
+    pool = DATA.quizzes.slice();
+  }
+  pool = [...pool].sort(()=>Math.random()-0.5).slice(0,10);
+  quizState = {pool, i:0, score:0};
+  showQuiz();
+}
+
+function nextQuiz(){
+  if(!quizState) { startQuiz(); return; }
+  quizState.i++;
+  showQuiz();
+}
+
+function showQuiz(){
+  const {pool, i, score} = quizState;
+  if(i>=pool.length){
+    document.getElementById("quizQ").innerHTML = `复习完成！得分：<b>${score}/${pool.length}</b>`;
+    document.getElementById("quizChoices").innerHTML = "";
+    document.getElementById("quizFeedback").innerHTML = score>=8 ? "🏆 太棒了！给你大星星！" : score>=5 ? "👍 不错，继续加油！" : "💪 再复习一次会更好！";
+    addStar(score>=5?2:1);
+    quizState = null;
+    return;
+  }
+  quiz = pool[i];
+  document.getElementById("quizQ").textContent = `${i+1}. ${quiz.q}`;
+  document.getElementById("quizFeedback").textContent = "";
+  document.getElementById("quizChoices").innerHTML = quiz.choices.map((c,idx)=>
+    `<button class="choice" onclick="pickQuiz(${idx})">${c}</button>`
+  ).join("");
+}
+
+window.pickQuiz = function(idx){
+  const btns = document.querySelectorAll("#quizChoices .choice");
+  if(quiz.answered) return;
+  quiz.answered = true;
+  btns.forEach((b,bi)=>{
+    b.disabled = true;
+    if(bi===quiz.a) b.classList.add("correct");
+  });
+  if(idx===quiz.a){
+    document.getElementById("quizFeedback").textContent = "✅ 答对了！+⭐";
+    quizState.score++;
+  } else {
+    btns[idx].classList.add("wrong");
+    document.getElementById("quizFeedback").textContent = `❎ 正确答案是：${quiz.choices[quiz.a]}`;
+    addError("quiz", `${quiz.q} — 你的答案：${quiz.choices[idx]}，正确答案：${quiz.choices[quiz.a]}`);
+  }
+  setTimeout(nextQuiz, 900);
+};
+
+// ===== 写话 =====
+let wp = null;
+function nextWrite(){
+  wp = DATA.writePrompts[Math.floor(Math.random()*DATA.writePrompts.length)];
+  document.getElementById("writeQ").innerHTML = `💬 ${wp.hint}<br/><span style="color:#6c5ce7;font-size:13px;">用上：${wp.words.join("、")}</span>`;
+  document.getElementById("writeAnswer").value = "";
+  document.getElementById("writeFeedback").textContent = "";
+}
+function checkWrite(){
+  const val = document.getElementById("writeAnswer").value.trim();
+  const fb = document.getElementById("writeFeedback");
+  if(!val){ fb.textContent = "先写一句话哦～"; return; }
+  const hasWord = wp.words.some(w=>val.includes(w));
+  const len = val.length;
+  if(hasWord && len>=4){
+    fb.innerHTML = `✅ 写得不错！参考：${wp.sample}`;
+    addStar(1);
+  } else {
+    fb.innerHTML = `💡 试试参考：${wp.sample}`;
+    addError("char", `写话：${wp.words.join("/")} — 句子：${val}`);
+  }
+}
+
+// ===== 错词本 =====
+function renderErrors(){
+  const filter = document.getElementById("errorFilter").value;
+  let list = state.errors;
+  if(filter !== "all") list = list.filter(e=>e.type===filter);
+  const el = document.getElementById("errorList");
+  if(!list.length){ el.innerHTML = "<div class='empty'>还没有错题记录，继续加油！</div>"; return; }
+  el.innerHTML = list.slice(0,50).map(e=>`
+    <div style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">
+      <div style="color:#636e72;">${e.time}</div>
+      <div style="margin-top:2px;">${e.type==='read'?'📖阅读':e.type==='quiz'?'🔁测验':'✍️写话'}：${e.text}</div>
+    </div>
+  `).join("");
+}
+function clearErrors(){
+  if(confirm("确定清空错词本？")){ state.errors=[]; save(); }
+}
+
+// ===== Tabs =====
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("show", p.id===name));
+  if(name==="review"){
+    document.getElementById("quizQ").textContent = "选择复习模式：";
+    document.getElementById("quizChoices").innerHTML = `
+      <button class="choice" onclick="setQuizMode('all')">📚 全册综合复习</button>
+      <button class="choice" onclick="setQuizMode('weak')">🎯 只复习不会的字</button>
+      <button class="choice" onclick="setQuizMode('lesson')">📖 复习当前课文</button>
+    `;
+    document.getElementById("quizFeedback").textContent = "";
+  }
+  if(name==="write" && !wp) nextWrite();
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.tab)));
+
+function setQuizMode(mode){
+  quizMode = mode;
+  nextQuiz();
+}
+
+// Init
+updateUI();
+nextWrite();
+</script>
+</body>
+</html>
