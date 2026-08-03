@@ -102,7 +102,7 @@
   <button data-tab="stocks" title="股票" onclick="switchTab('stocks')"><span class="emoji">📈</span><span class="nav-label">股票</span></button>
   <button data-tab="manifest" title="显化角" onclick="switchTab('manifest')"><span class="emoji">💭</span><span class="nav-label">显化角</span></button>
   <button data-tab="news" title="新闻" onclick="switchTab('news')"><span class="emoji">📰</span><span class="nav-label">新闻</span></button>
-  <button data-tab="bobo" title="Bobo" onclick="switchTab('bobo')"><span class="emoji">📚</span><span class="nav-label">Bobo</span></button>
+  <button data-tab="account" title="记账" onclick="switchTab('account')"><span class="emoji">💰</span><span class="nav-label">记账</span></button>
   <button data-tab="journal" title="日记" onclick="switchTab('journal')"><span class="emoji">📝</span><span class="nav-label">日记</span></button>
 </div>
 
@@ -120,7 +120,7 @@
   <div data-tab="stocks" onclick="switchTab('stocks')"><span class="emoji">📈</span>股票</div>
   <div data-tab="manifest" onclick="switchTab('manifest')"><span class="emoji">💭</span>显化</div>
   <div data-tab="news" onclick="switchTab('news')"><span class="emoji">📰</span>新闻</div>
-  <div data-tab="journal" onclick="switchTab('journal')"><span class="emoji">📝</span>日记</div>
+  <div data-tab="account" onclick="switchTab('account')"><span class="emoji">💰</span>记账</div>
 </div>
 
 <div class="container">
@@ -184,19 +184,39 @@
     <div id="pastAnswers" style="margin-top:10px;"></div>
   </div>
 
-  <!-- Bobo -->
-  <div id="bobo" class="panel">
+  <!-- 记账 -->
+  <div id="account" class="panel">
     <div class="card">
-      <h3>📊 学习概览</h3>
-      <div class="bobo-stat">
-        <div><div class="num" id="boboStars">-</div><div class="lbl">⭐ 星星</div></div>
-        <div><div class="num" id="boboDays">-</div><div class="lbl">📅 天数</div></div>
-        <div><div class="num" id="boboErrors">-</div><div class="lbl">🩹 错词</div></div>
+      <h3>💸 记一笔</h3>
+      <div style="display:grid;gap:8px;margin-top:8px;">
+        <input id="accAmount" type="number" placeholder="金额" style="padding:10px;border:1px solid #ddd;border-radius:8px;font-size:16px;" />
+        <select id="accType" style="padding:10px;border:1px solid #ddd;border-radius:8px;font-size:16px;">
+          <option value="expense">支出</option>
+          <option value="income">收入</option>
+        </select>
+        <select id="accCategory" style="padding:10px;border:1px solid #ddd;border-radius:8px;font-size:16px;">
+          <option value="餐饮">餐饮</option>
+          <option value="交通">交通</option>
+          <option value="购物">购物</option>
+          <option value="住房">住房</option>
+          <option value="娱乐">娱乐</option>
+          <option value="医疗">医疗</option>
+          <option value="教育">教育</option>
+          <option value="工资">工资</option>
+          <option value="投资">投资</option>
+          <option value="其他">其他</option>
+        </select>
+        <input id="accNote" placeholder="备注（可选）" style="padding:10px;border:1px solid #ddd;border-radius:8px;font-size:16px;" />
+        <button class="btn" onclick="saveAccount()" style="width:100%;">💾 保存</button>
       </div>
     </div>
     <div class="card">
-      <h3>📖 当前课程</h3>
-      <div id="boboLesson">加载中...</div>
+      <h3>📊 本月概览</h3>
+      <div id="accSummary" style="margin-top:8px;font-size:14px;">加载中...</div>
+    </div>
+    <div class="card">
+      <h3>📋 最近记录</h3>
+      <div id="accList" style="margin-top:8px;"></div>
     </div>
   </div>
 
@@ -443,6 +463,60 @@ function renderJournals() {
   list.innerHTML = journals.map(j => `<div class="card"><div style="font-size:12px;color:#636e72;">${j.time}</div><div>${j.text}</div></div>`).join('');
 }
 
+function saveAccount() {
+  const amountEl = $('accAmount');
+  const typeEl = $('accType');
+  const catEl = $('accCategory');
+  const noteEl = $('accNote');
+  const amount = parseFloat(amountEl?.value);
+  if (!amountEl || !amount || amount <= 0) { alert('请输入有效金额'); return; }
+  const type = typeEl ? typeEl.value : 'expense';
+  const category = catEl ? catEl.value : '其他';
+  const note = noteEl ? noteEl.value.trim() : '';
+  const accounts = LS.get('accounts', []);
+  accounts.unshift({ amount, type, category, note, time: today() + ' ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) });
+  LS.set('accounts', accounts.slice(0, 200));
+  if (amountEl) amountEl.value = '';
+  if (noteEl) noteEl.value = '';
+  renderAccounts();
+}
+
+function delAccount(i) {
+  const accounts = LS.get('accounts', []);
+  accounts.splice(i, 1);
+  LS.set('accounts', accounts.slice(0, 200));
+  renderAccounts();
+}
+
+function renderAccounts() {
+  const list = $('accList');
+  const summary = $('accSummary');
+  const accounts = LS.get('accounts', []);
+  if (!accounts.length) {
+    if (list) list.innerHTML = '<div class="card" style="color:#999;">还没有记录</div>';
+    if (summary) summary.innerHTML = '本月暂无数据';
+    return;
+  }
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthAccounts = accounts.filter(a => a.time.startsWith(monthKey));
+  const expense = monthAccounts.filter(a => a.type === 'expense').reduce((s, a) => s + a.amount, 0);
+  const income = monthAccounts.filter(a => a.type === 'income').reduce((s, a) => s + a.amount, 0);
+  if (summary) summary.innerHTML = `📅 ${monthKey} · 支出 <b>$${expense.toFixed(2)}</b> · 收入 <b>$${income.toFixed(2)}</b> · 结余 <b>$${(income - expense).toFixed(2)}</b>`;
+  if (list) {
+    list.innerHTML = accounts.slice(0, 50).map((a, i) => `<div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-weight:600;${a.type==='expense'?'color:#e17055':'color:#00b894'}">${a.type==='expense'?'-':'+'}$${a.amount.toFixed(2)}</div>
+        <div style="font-size:12px;color:#636e72;">${a.category} ${a.note ? '· ' + a.note : ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-size:11px;color:#636e72;">${a.time.split(' ')[0]}</div>
+        <button class="del-btn" onclick="delAccount(${i})">删除</button>
+      </div>
+    </div>`).join('');
+  }
+}
+
 async function refreshNews() {
   const list = $('newsList');
   if (list) list.innerHTML = '<div class="card"><p style="text-align:center;color:#999;">加载中...</p></div>';
@@ -490,8 +564,10 @@ function switchTab(tab) {
     if (div) div.classList.add('active');
     if (tab === 'stocks') refreshStocks();
     if (tab === 'bobo') refreshBobo();
+    if (tab === 'account') renderAccounts();
     if (tab === 'manifest') initManifest();
     if (tab === 'news') refreshNews();
+    if (tab === 'journal') renderJournals();
   } catch (e) {
     const err = $('tabError');
     if (err) { err.textContent = '切换出错: ' + e.message; err.style.display = 'block'; }
