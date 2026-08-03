@@ -932,6 +932,12 @@ function loadFortune(birth) {
     result.innerHTML = '<div style="color:#e17055;">开运数据加载失败</div><button class="btn btn-secondary" onclick="resetFortuneBirth()" style="margin-top:8px;">重新加载</button>';
   });
 }
+
+function renderFortune() {
+  const result = $('fortuneResult');
+  if (result) result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  loadFortune(DEFAULT_FORTUNE_BIRTH);
+}
 </script>
 
 </body>
