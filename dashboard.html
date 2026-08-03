@@ -17,13 +17,13 @@
   
   .left-nav { position: fixed; left: 0; top: 0; bottom: 0; width: 70px; background: linear-gradient(180deg, #6c5ce7, #a29bfe); display: flex; flex-direction: column; align-items: center; padding: 12px 0; z-index: 20; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
   .left-nav .logo { font-size: 28px; margin-bottom: 10px; }
-  .left-nav button { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 12px 0; width: 100%; position: relative; transition: all 0.2s; opacity: 0.8; }
+  .left-nav button { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 14px 0; width: 100%; position: relative; transition: all 0.2s; opacity: 0.8; touch-action: manipulation; -webkit-user-select: none; }
   .left-nav button.active { background: rgba(255,255,255,0.2); opacity: 1; }
   .left-nav button:active { transform: scale(0.95); }
-  .left-nav .nav-label { font-size: 10px; margin-top: 2px; }
-  .left-nav button .emoji { display: block; font-size: 24px; }
+  .left-nav .nav-label { font-size: 10px; margin-top: 2px; pointer-events: none; }
+  .left-nav button .emoji { display: block; font-size: 24px; pointer-events: none; }
   
-  .container { padding: 12px; padding-left: 85px; max-width: 600px; margin: 0 auto; }
+  .container { padding: 12px; padding-left: 85px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
   
   .card { background: white; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.06); animation: fadeInUp 0.3s ease; }
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -76,6 +76,15 @@
   .floating-star { position: fixed; font-size: 20px; opacity: 0; pointer-events: none; z-index: 5; animation: floatStar 3s ease-out forwards; }
   @keyframes floatStar { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
   
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 8px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 30; }
+  .bottom-nav button { background: none; border: none; font-size: 10px; color: #636e72; cursor: pointer; flex: 1; padding: 4px 0; touch-action: manipulation; -webkit-user-select: none; }
+  .bottom-nav button .emoji { display: block; font-size: 20px; margin-bottom: 2px; }
+  .bottom-nav button.active { color: #6c5ce7; font-weight: 600; }
+  
+  @media (min-width: 768px) {
+    .bottom-nav { display: none; }
+  }
+  
   .panel { display: none; animation: fadeIn 0.3s; }
   .panel.show { display: block; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -89,12 +98,12 @@
 
 <div class="left-nav">
   <div class="logo">🌟</div>
-  <button class="active" data-tab="today" title="今日"><span class="emoji">📋</span><span class="nav-label">今日</span></button>
-  <button data-tab="stocks" title="股票"><span class="emoji">📈</span><span class="nav-label">股票</span></button>
-  <button data-tab="manifest" title="显化角"><span class="emoji">💭</span><span class="nav-label">显化角</span></button>
-  <button data-tab="news" title="新闻"><span class="emoji">📰</span><span class="nav-label">新闻</span></button>
-  <button data-tab="bobo" title="Bobo"><span class="emoji">📚</span><span class="nav-label">Bobo</span></button>
-  <button data-tab="journal" title="日记"><span class="emoji">📝</span><span class="nav-label">日记</span></button>
+  <button class="active" data-tab="today" title="今日" onclick="switchTab('today')"><span class="emoji">📋</span><span class="nav-label">今日</span></button>
+  <button data-tab="stocks" title="股票" onclick="switchTab('stocks')"><span class="emoji">📈</span><span class="nav-label">股票</span></button>
+  <button data-tab="manifest" title="显化角" onclick="switchTab('manifest')"><span class="emoji">💭</span><span class="nav-label">显化角</span></button>
+  <button data-tab="news" title="新闻" onclick="switchTab('news')"><span class="emoji">📰</span><span class="nav-label">新闻</span></button>
+  <button data-tab="bobo" title="Bobo" onclick="switchTab('bobo')"><span class="emoji">📚</span><span class="nav-label">Bobo</span></button>
+  <button data-tab="journal" title="日记" onclick="switchTab('journal')"><span class="emoji">📝</span><span class="nav-label">日记</span></button>
 </div>
 
 <div class="header">
@@ -104,6 +113,14 @@
 </div>
 
 <button class="refresh-btn" onclick="refreshAll()" title="刷新">🔄</button>
+
+<div class="bottom-nav">
+  <button class="active" data-tab="today" onclick="switchTab('today')"><span class="emoji">📋</span>今日</button>
+  <button data-tab="stocks" onclick="switchTab('stocks')"><span class="emoji">📈</span>股票</button>
+  <button data-tab="manifest" onclick="switchTab('manifest')"><span class="emoji">💭</span>显化</button>
+  <button data-tab="news" onclick="switchTab('news')"><span class="emoji">📰</span>新闻</button>
+  <button data-tab="journal" onclick="switchTab('journal')"><span class="emoji">📝</span>日记</button>
+</div>
 
 <div class="container">
 
@@ -446,23 +463,27 @@ function renderNews() {
   $("newsList").innerHTML = html;
 }
 
+function switchTab(tab) {
+  document.querySelectorAll(".left-nav button").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("show"));
+  const btn = document.querySelector(`.left-nav button[data-tab="${tab}"]`);
+  if (btn) btn.classList.add("active");
+  const panel = $(tab);
+  if (panel) panel.classList.add("show");
+  if (tab === "stocks") refreshStocks();
+  if (tab === "bobo") refreshBobo();
+  if (tab === "manifest") initManifest();
+  if (tab === "news") refreshNews();
+}
 document.querySelectorAll(".left-nav button").forEach(btn => {
   btn.addEventListener("click", (e) => {
-    e.preventDefault();
     const tab = btn.dataset.tab;
-    document.querySelectorAll(".left-nav button").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach(p => p.classList.remove("show"));
-    btn.classList.add("active");
-    $(tab).classList.add("show");
-    if (tab === "stocks") refreshStocks();
-    if (tab === "bobo") refreshBobo();
-    if (tab === "manifest") initManifest();
-    if (tab === "news") refreshNews();
+    if (tab) switchTab(tab);
   });
-  // Safari iOS fix: also listen for touch events
   btn.addEventListener("touchend", (e) => {
     e.preventDefault();
-    btn.click();
+    const tab = btn.dataset.tab;
+    if (tab) switchTab(tab);
   });
 });
 
