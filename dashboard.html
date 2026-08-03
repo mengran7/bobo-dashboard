@@ -874,7 +874,8 @@ function saveFortuneBirth() {
   const [y, m, d] = dateVal.split('-').map(Number);
   const birth = { year: y, month: m, day: d, gender, hour: 14, minute: 30 };
   LS.set('fortuneBirth', birth);
-  if (result) result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  result.style.display = 'block';
+  result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   loadFortune(birth);
 }
 
@@ -884,7 +885,8 @@ function resetFortuneBirth() {
   LS.set('fortuneBirth', birth);
   $('fortuneBirthDate').value = birth.year + '-' + String(birth.month).padStart(2,'0') + '-' + String(birth.day).padStart(2,'0');
   $('fortuneGender').value = birth.gender;
-  if (result) result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  result.style.display = 'block';
+  result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   loadFortune(birth);
 }
 
@@ -893,10 +895,10 @@ function loadFortune(birth) {
   const body = JSON.stringify({ birth });
   fetch(getApiBase() + '/api/fortune', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type':'application/json'},
     body
   }).then(r => r.json()).then(data => {
-    if (!data.dayMaster) { result.innerHTML = '<div style="color:#e17055;">开运数据加载失败，请稍后重试</div>'; return; }
+    if (!data.dayMaster) { result.style.display='block'; result.innerHTML = '<div style="color:#e17055;">开运数据加载失败，请稍后重试</div>'; return; }
     const wx = data.wuxing || [];
     const wuxingText = wx.map(w => `${w.element}${w.count}格`).join('、') || '暂无';
     const today = data.todayAlmanac || {};
@@ -926,16 +928,20 @@ function loadFortune(birth) {
         <b>💡 开运小贴士：</b>${tip}
       </div>
     `;
+    result.style.display = 'block';
     result.innerHTML = html;
   }).catch(() => {
-    const result = $('fortuneResult');
+    result.style.display = 'block';
     result.innerHTML = '<div style="color:#e17055;">开运数据加载失败</div><button class="btn btn-secondary" onclick="resetFortuneBirth()" style="margin-top:8px;">重新加载</button>';
   });
 }
 
 function renderFortune() {
   const result = $('fortuneResult');
-  if (result) result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  if (result) {
+    result.style.display = 'block';
+    result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  }
   loadFortune(DEFAULT_FORTUNE_BIRTH);
 }
 </script>
