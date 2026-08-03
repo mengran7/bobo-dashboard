@@ -558,7 +558,13 @@ function renderMiniStocks() {
       container.appendChild(div);
     });
   } else {
-    container.innerHTML = '<div style="color:#999;font-size:12px;">刷新后显示</div>';
+    container.innerHTML = '<div style="color:#999;font-size:12px;">加载中...</div>';
+    fetch(window.location.origin + '/api/stocks').then(r => r.json()).then(data => {
+      LS.set('stockCache', { time: Date.now(), prices: data.prices || {} });
+      renderMiniStocks();
+    }).catch(() => {
+      container.innerHTML = '<div style="color:#999;font-size:12px;">刷新后显示</div>';
+    });
   }
 }
 
@@ -569,7 +575,13 @@ function renderMiniNews() {
   if (cache.articles && cache.articles.length) {
     container.innerHTML = cache.articles.slice(0, 3).map(a => '<div class="mini-card" style="margin-bottom:6px;"><div style="font-weight:600;font-size:13px;">' + a.title + '</div><div style="font-size:11px;color:#636e72;">' + a.source + '</div></div>').join('');
   } else {
-    container.innerHTML = '<div style="color:#999;font-size:12px;">刷新后显示</div>';
+    container.innerHTML = '<div style="color:#999;font-size:12px;">加载中...</div>';
+    fetch(window.location.origin + '/api/news').then(r => r.json()).then(data => {
+      LS.set('newsCache', { articles: data.articles || [] });
+      renderMiniNews();
+    }).catch(() => {
+      container.innerHTML = '<div style="color:#999;font-size:12px;">刷新后显示</div>';
+    });
   }
 }
 
