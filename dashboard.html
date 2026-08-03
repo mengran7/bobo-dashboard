@@ -161,6 +161,10 @@
       <h3>🇺🇸 美国</h3>
       <div class="stock-grid" id="usStocks"></div>
     </div>
+    <div class="card">
+      <h3>🥇 黄金 & 汇率</h3>
+      <div class="stock-grid" id="goldBox"></div>
+    </div>
     <div class="empty" id="stockHint">下拉页面或点右上角 🔄 刷新</div>
   </div>
 
@@ -296,8 +300,8 @@ function spawnStar(el) {
 }
 
 async function refreshStocks() {
-  const list = $('stocksList');
-  if (list) list.innerHTML = '<div class="card"><p style="text-align:center;color:#999;">加载中...</p></div>';
+  const sg = $('sgStocks'); const us = $('usStocks'); const gold = $('goldBox');
+  if (sg) sg.innerHTML = '<div class="stock-item"><div class="stock-price">加载中...</div></div>';
   try {
     const res = await fetch(window.location.origin + '/api/stocks');
     const data = await res.json();
@@ -309,52 +313,77 @@ async function refreshStocks() {
 }
 
 function renderStocks(data) {
-  const list = $('stocksList');
-  if (!list) return;
   const prices = data.prices || {};
-  const symbols = [
-    { sym: 'D05.SI', name: '星展银行' }, { sym: 'O39.SI', name: '华侨银行' }, { sym: 'U11.SI', name: '大华银行' }, { sym: '^STI', name: '海峡指数' },
-    { sym: 'AAPL', name: 'Apple' }, { sym: 'TSLA', name: 'Tesla' }, { sym: 'SPCX', name: 'SpaceX' }, { sym: 'NVDA', name: 'NVIDIA' }, { sym: 'GOOGL', name: 'Google' }, { sym: 'NFLX', name: 'Netflix' },
-    { sym: 'GC=F', name: '黄金 USD' }, { sym: 'USDSGD=X', name: 'USD/SGD' }
+  const sgSymbols = [
+    { sym: 'D05.SI', name: '星展银行' }, { sym: 'O39.SI', name: '华侨银行' }, { sym: 'U11.SI', name: '大华银行' }, { sym: '^STI', name: '海峡指数' }
+  ];
+  const usSymbols = [
+    { sym: 'AAPL', name: 'Apple' }, { sym: 'TSLA', name: 'Tesla' }, { sym: 'SPCX', name: 'SpaceX' }, { sym: 'NVDA', name: 'NVIDIA' }, { sym: 'GOOGL', name: 'Google' }, { sym: 'NFLX', name: 'Netflix' }
   ];
   const gc = prices['GC=F'];
   const usdSgd = prices['USDSGD=X'];
   const oz = 31.1035;
-  let html = '';
-  for (const s of symbols) {
-    const p = prices[s.sym];
-    if (!p || p.price == null) {
-      html += `<div class="stock-item"><div class="stock-name">${s.name}</div><div class="stock-price">--</div><div class="stock-change">暂无数据</div></div>`;
-      continue;
+  function renderSection(symbols, containerId) {
+    const container = $(containerId);
+    if (!container) return;
+    let html = '';
+    for (const s of symbols) {
+      const p = prices[s.sym];
+      if (!p || p.price == null) {
+        html += `<div class="stock-item"><div class="stock-name">${s.name}</div><div class="stock-price">--</div><div class="stock-change">暂无数据</div></div>`;
+        continue;
+      }
+      let changeText = '--';
+      let changeClass = 'stock-neutral';
+      if (p.change != null) {
+        changeText = (p.change >= 0 ? '+' : '') + p.change.toFixed(2) + ' (' + (p.changePct >= 0 ? '+' : '') + p.changePct.toFixed(2) + '%)';
+        changeClass = p.change >= 0 ? 'stock-up' : 'stock-down';
+      }
+      html += `<div class="stock-item"><div class="stock-name">${s.name}</div><div class="stock-price">${p.price.toFixed(2)}</div><div class="stock-change ${changeClass}">${changeText}</div></div>`;
     }
-    let changeText = '--';
-    let changeClass = 'stock-neutral';
-    if (p.change != null) {
-      changeText = (p.change >= 0 ? '+' : '') + p.change.toFixed(2) + ' (' + (p.changePct >= 0 ? '+' : '') + p.changePct.toFixed(2) + '%)';
-      changeClass = p.change >= 0 ? 'stock-up' : 'stock-down';
-    }
-    if (s.sym === 'GC=F' && gc && gc.price) {
-      const usdPerG = gc.price / oz;
-      const sgdPerOz = gc.price * (usdSgd ? (usdSgd.price || 0) : 0);
-      const sgdPerG = sgdPerOz / oz;
-      html += `<div class="stock-item"><div class="stock-name">${s.name} 1oz</div><div class="stock-price">$${gc.price.toFixed(2)}</div><div class="stock-change ${changeClass}">${changeText}</div></div>`;
-      html += `<div class="stock-item"><div class="stock-name">1g USD</div><div class="stock-price">$${usdPerG.toFixed(2)}</div><div class="stock-change">$${usdPerG.toFixed(2)}/g</div></div>`;
-      html += `<div class="stock-item"><div class="stock-name">1oz SGD</div><div class="stock-price">S$${sgdPerOz.toFixed(2)}</div><div class="stock-change">S$${sgdPerOz.toFixed(2)}/oz</div></div>`;
-      html += `<div class="stock-item"><div class="stock-name">1g SGD</div><div class="stock-price">S$${sgdPerG.toFixed(2)}</div><div class="stock-change">S$${sgdPerG.toFixed(2)}/g</div></div>`;
-    } else if (s.sym === 'USDSGD=X') {
-      html += `<div class="stock-item"><div class="stock-name">${s.name}</div><div class="stock-price">${p.price != null ? p.price.toFixed(4) : '--'}</div><div class="stock-change ${changeClass}">${changeText}</div></div>`;
-    } else {
-      html += `<div class="stock-item"><div class="stock-name">${s.name}</div><div class="stock-price">${p.price != null ? p.price.toFixed(2) : '--'}</div><div class="stock-change ${changeClass}">${changeText}</div></div>`;
-    }
+    container.innerHTML = html;
   }
-  list.innerHTML = html;
+  renderSection(sgSymbols, 'sgStocks');
+  renderSection(usSymbols, 'usStocks');
+  const goldBox = $('goldBox');
+  if (goldBox && gc && gc.price) {
+    const usdPerG = gc.price / oz;
+    const sgdPerOz = gc.price * (usdSgd ? (usdSgd.price || 0) : 0);
+    const sgdPerG = sgdPerOz / oz;
+    goldBox.innerHTML = `
+      <div class="stock-item"><div class="stock-name">黄金 1oz USD</div><div class="stock-price">$${gc.price.toFixed(2)}</div></div>
+      <div class="stock-item"><div class="stock-name">1g USD</div><div class="stock-price">$${usdPerG.toFixed(2)}</div></div>
+      <div class="stock-item"><div class="stock-name">1oz SGD</div><div class="stock-price">S$${sgdPerOz.toFixed(2)}</div></div>
+      <div class="stock-item"><div class="stock-name">1g SGD</div><div class="stock-price">S$${sgdPerG.toFixed(2)}</div></div>
+      <div class="stock-item"><div class="stock-name">USD/SGD</div><div class="stock-price">${usdSgd ? (usdSgd.price || 0).toFixed(4) : '--'}</div></div>
+    `;
+  } else if (goldBox) {
+    goldBox.innerHTML = '<div class="stock-item"><div class="stock-price">加载中...</div></div>';
+  }
 }
 
 function initManifest() {
-  const box = $('manifestBox');
-  if (!box || box.dataset.loaded) return;
-  box.dataset.loaded = '1';
-  box.innerHTML = '<div class="card"><p>写下你的意图或愿望...</p><textarea id="intentInput" rows="3" placeholder="我想要..."></textarea><button class="btn" onclick="saveIntent()">保存意图</button><div id="pastAnswers" style="margin-top:10px;"></div></div>';
+  const answers = $('pastAnswers');
+  if (!answers) return;
+  const list = LS.get('manifestAnswers', []);
+  if (list.length) {
+    answers.innerHTML = list.slice().reverse().map(a => '<div class="card"><div style="font-size:12px;color:#636e72;">' + a.time + '</div><div>' + a.q + ': ' + a.a + '</div></div>').join('');
+  }
+  const intentInput = $('intentInput');
+  if (intentInput && !intentInput.dataset.bound) {
+    intentInput.dataset.bound = '1';
+  }
+  const quote = $('dailyQuote');
+  if (quote && !quote.dataset.loaded) {
+    quote.dataset.loaded = '1';
+    const q = ['我值得拥有一切美好。','今天，我正在吸引正向的机遇。','感恩我所拥有的一切，更多美好正在到来。','我相信宇宙的安排，一切都在最好的时间发生。'];
+    quote.textContent = q[Math.floor(Math.random() * q.length)];
+  }
+  const qEl = $('dailyQuestion');
+  if (qEl && !qEl.textContent) {
+    const questions = ['今天你的能量如何？','你吸引的是什么？','你感恩的是什么？','今天你愿意放下什么？'];
+    qEl.textContent = questions[Math.floor(Math.random() * questions.length)];
+  }
 }
 
 function saveIntent() {
