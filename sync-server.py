@@ -15,6 +15,17 @@ NEWS_SOURCES = [
     {"name": "HN 热门", "url": "https://hnrss.org/frontpage?format=xml", "category": "科技"},
 ]
 
+FORTUNE_CACHE = os.path.join(DIR, 'fortune-cache.json')
+
+def _mingyu_post(path, payload):
+    req = urllib.request.Request(
+        f'https://aov.cc/api/v1{path}',
+        data=json.dumps(payload).encode('utf-8'),
+        headers={'Content-Type': 'application/json'}
+    )
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
 class Handler(SimpleHTTPRequestHandler):
     def _cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -158,6 +169,89 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'OK')
+            return
+        return super().do_GET()
+
+    def do_POST(self):
+        if self.path == '/api/state':
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length)
+            with open(STATE, 'w', encoding='utf-8') as f:
+                f.write(body.decode('utf-8'))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'OK')
+            return
+        if self.path == '/api/fortune':
+            try:
+                length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(length)
+                payload = json.loads(body.decode('utf-8')) if body else {}
+                birth = payload.get('birth', {})
+                today = __import__('datetime').datetime.now()
+                today_str = f"{today.year}-{today.month}-{today.day}"
+
+                bazi_resp = _mingyu_post('/bazi/calculate', {
+                    'year': birth.get('year', 1990),
+                    'month': birth.get('month', 1),
+                    'day': birth.get('day', 1),
+                    'gender': birth.get('gender', 'female'),
+                    'birthHour': birth.get('hour', 12),
+                    'birthMinute': birth.get('minute', 0),
+                    'dateType': 'solar',
+                    'useTrueSolarTime': True,
+                    'birthLatitude': birth.get('latitude', 31.2),
+                    'birthLongitude': birth.get('longitude', 121.5),
+                    'timeZoneId': birth.get('timeZoneId', 'Asia/Shanghai')
+                })
+
+                wuxing_resp = _mingyu_post('/foundation/wuxing', {
+                    'year': birth.get('year', 1990),
+                    'month': birth.get('month', 1),
+                    'day': birth.get('day', 1),
+                    'gender': birth.get('gender', 'female'),
+                    'birthHour': birth.get('hour', 12),
+                    'birthMinute': birth.get('minute', 0),
+                    'dateType': 'solar',
+                    'birthLatitude': birth.get('latitude', 31.2),
+                    'birthLongitude': birth.get('longitude', 121.5),
+                    'timeZoneId': birth.get('timeZoneId', 'Asia/Shanghai')
+                })
+
+                almanac_resp = _mingyu_post('/divination/almanac', {
+                    'startDate': today_str,
+                    'endDate': today_str,
+                    'participants': [{
+                        'year': birth.get('year', 1990),
+                        'month': birth.get('month', 1),
+                        'day': birth.get('day', 1),
+                        'gender': birth.get('gender', 'female'),
+                        'birthHour': birth.get('hour', 12),
+                        'birthMinute': birth.get('minute', 0),
+                        'dateType': 'solar'
+                    }],
+                    'eventType': 'custom'
+                })
+
+                dm = bazi_resp.get('data', {}).get('dayMaster', {})
+                wuxing = wuxing_resp.get('data', {})
+                almanac = almanac_resp.get('data', {})
+
+                fortune = {
+                    'dayMaster': f"{dm.get('yinYang', '')}{dm.get('element', '')}日主",
+                    'wuxing': wuxing.get('wuxingDistribution', []),
+                    'todayAlmanac': almanac.get('almanacDays', [{}])[0] if almanac.get('almanacDays') else {},
+                    'date': today_str
+                }
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(fortune, ensure_ascii=False).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(str(e).encode('utf-8'))
             return
         return super().do_POST()
 

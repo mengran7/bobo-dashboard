@@ -150,6 +150,18 @@
         <button class="btn" onclick="addHabit()">＋</button>
       </div>
     </div>
+    <div class="card" id="fortuneCard">
+      <h3>🧧 今日开运</h3>
+      <div id="fortuneInput" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+        <input type="date" id="fortuneBirthDate" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;" />
+        <select id="fortuneGender" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+          <option value="female">女</option>
+          <option value="male">男</option>
+        </select>
+        <button class="btn btn-secondary" onclick="saveFortuneBirth()">💾 保存生辰</button>
+      </div>
+      <div id="fortuneResult" style="margin-top:10px;font-size:14px;display:none;"></div>
+    </div>
   </div>
 
   <!-- 股票 -->
@@ -828,10 +840,75 @@ function init() {
   renderTodos();
   renderHabits();
   renderJournals();
+  renderFortune();
   const initial = location.hash.replace('#','') || 'today';
   if (['today','stocks','manifest','news','bobo','journal'].includes(initial)) switchTab(initial);
 }
 init();
+
+function saveFortuneBirth() {
+  const dateVal = $('fortuneBirthDate').value;
+  const gender = $('fortuneGender').value;
+  if (!dateVal) { alert('请先选择出生日期'); return; }
+  const [y, m, d] = dateVal.split('-').map(Number);
+  LS.set('fortuneBirth', { year: y, month: m, day: d, gender });
+  renderFortune();
+}
+
+function renderFortune() {
+  const result = $('fortuneResult');
+  const birth = LS.get('fortuneBirth');
+  if (!birth) {
+    result.style.display = 'none';
+    $('fortuneInput').style.display = 'flex';
+    return;
+  }
+  result.style.display = 'block';
+  $('fortuneInput').style.display = 'none';
+  result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
+  const body = JSON.stringify({ birth });
+  fetch(getApiBase() + '/api/fortune', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body
+  }).then(r => r.json()).then(data => {
+    if (!data.dayMaster) { result.innerHTML = '<div style="color:#636e72;">暂无开运数据</div>'; return; }
+    const wx = data.wuxing || [];
+    const wuxingText = wx.map(w => `${w.element}${w.count}格`).join('、') || '暂无';
+    const today = data.todayAlmanac || {};
+    const yi = (today.yi || []).slice(0, 3).join('、') || '宜：修身养性';
+    const ji = (today.ji || []).slice(0, 3).join('、') || '忌：无特别忌讳';
+    const suitable = today.suitable || [];
+    const avoid = today.avoid || [];
+    const direction = today.luckyDirection || '';
+    const color = today.luckyColor || '';
+    const elementTips = {
+      '金': '适合佩戴金属饰品，穿白色、金色；西方方位有利；可多接触金属、玉石。',
+      '木': '适合佩戴木质饰品，穿绿色、青色；东方方位有利；可多接触植物、木质品。',
+      '水': '适合佩戴黑色、蓝色饰品；北方方位有利；可多接触水元素、水晶。',
+      '火': '适合佩戴红色、紫色饰品；南方方位有利；可多接触灯光、温暖物品。',
+      '土': '适合佩戴黄色、棕色饰品；中央/西南方位有利；可多接触陶瓷、石材。'
+    };
+    const dm = data.dayMaster || '';
+    const elementMatch = dm.match(/(金|木|水|火|土)/);
+    const myElement = elementMatch ? elementMatch[1] : '';
+    const tip = myElement ? (elementTips[myElement] || '保持平和心态，顺势而为。') : '保持平和心态，顺势而为。';
+    let html = `
+      <div style="margin-bottom:8px;"><b>🧧 日主：</b>${data.dayMaster}</div>
+      <div style="margin-bottom:8px;"><b>📅 今日宜：</b>${yi}</div>
+      <div style="margin-bottom:8px;"><b>🚫 今日忌：</b>${ji}</div>
+      <div style="margin-bottom:8px;"><b>🧭 五行分布：</b>${wuxingText}</div>
+      ${direction ? '<div style="margin-bottom:8px;"><b>🧭 吉方：</b>' + direction + '</div>' : ''}
+      ${color ? '<div style="margin-bottom:8px;"><b>🎨 幸运色：</b>' + color + '</div>' : ''}
+      <div style="margin-top:10px;padding:8px;background:#f8f9fa;border-radius:8px;font-size:13px;color:#2d3436;">
+        <b>💡 开运小贴士：</b>${tip}
+      </div>
+    `;
+    result.innerHTML = html;
+  }).catch(() => {
+    result.innerHTML = '<div style="color:#636e72;">开运数据加载失败，请稍后重试</div>';
+  });
+}
 </script>
 
 </body>
