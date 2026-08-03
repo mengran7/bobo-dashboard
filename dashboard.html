@@ -889,7 +889,7 @@ function renderFortune() {
   LS.set('fortuneBirth', migrated);
   birth = migrated;
   result.style.display = 'block';
-  if (inputEl) inputEl.style.display = 'none';
+  if (inputEl) inputEl.style.display = 'flex';
   result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   const body = JSON.stringify({ birth });
   fetch(getApiBase() + '/api/fortune', {
