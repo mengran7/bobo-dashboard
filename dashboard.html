@@ -76,13 +76,14 @@
   .floating-star { position: fixed; font-size: 20px; opacity: 0; pointer-events: none; z-index: 5; animation: floatStar 3s ease-out forwards; }
   @keyframes floatStar { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
   
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0 env(safe-area-inset-bottom, 10px); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999; }
-  .bottom-nav div { background: none; border: none; font-size: 10px; color: #636e72; flex: 1; padding: 8px 0; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; min-height: 50px; }
-  .bottom-nav div .emoji { display: block; font-size: 22px; margin-bottom: 2px; pointer-events: none; }
-  .bottom-nav div.active { color: #6c5ce7; font-weight: 600; }
-  
-  @media (min-width: 768px) {
-    .bottom-nav { display: none; }
+  @media (max-width: 767px) {
+    .left-nav { display: flex; flex-direction: row; top: auto; bottom: 0; left: 0; right: 0; width: 100%; height: auto; padding: 6px 0; z-index: 30; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+    .left-nav button { flex: 1; padding: 8px 4px; border-radius: 0; border-bottom: 3px solid transparent; }
+    .left-nav button.active { border-bottom-color: #6c5ce7; background: rgba(255,255,255,0.15); }
+    .left-nav button .nav-label { display: inline; font-size: 10px; }
+    .left-nav button .emoji { display: inline; font-size: 20px; margin-right: 2px; }
+    .container { margin-left: 0; padding: 10px; padding-bottom: 70px; }
+    .header { padding-left: 18px; }
   }
   
   .panel { display: none; animation: fadeIn 0.3s; }
@@ -114,14 +115,6 @@
 </div>
 
 <button class="refresh-btn" onclick="refreshAll()" title="刷新">🔄</button>
-
-<div class="bottom-nav">
-  <div class="active" data-tab="today" onclick="switchTab('today')"><span class="emoji">📋</span>今日</div>
-  <div data-tab="stocks" onclick="switchTab('stocks')"><span class="emoji">📈</span>股票</div>
-  <div data-tab="manifest" onclick="switchTab('manifest')"><span class="emoji">💭</span>显化</div>
-  <div data-tab="news" onclick="switchTab('news')"><span class="emoji">📰</span>新闻</div>
-  <div data-tab="account" onclick="switchTab('account')"><span class="emoji">💰</span>记账</div>
-</div>
 
 <div class="container">
 
@@ -565,9 +558,6 @@ function switchTab(tab) {
     if (btn) btn.classList.add('active');
     const panel = $(tab);
     if (panel) panel.classList.add('show');
-    document.querySelectorAll('.bottom-nav div').forEach(d => d.classList.remove('active'));
-    const div = document.querySelector('.bottom-nav div[data-tab="' + tab + '"]');
-    if (div) div.classList.add('active');
     if (tab === 'stocks') refreshStocks();
     if (tab === 'bobo') refreshBobo();
     if (tab === 'account') renderAccounts();
@@ -586,10 +576,6 @@ window.addEventListener('hashchange', () => {
 document.querySelectorAll('.left-nav button').forEach(btn => {
   btn.addEventListener('click', (e) => { const tab = btn.dataset.tab; if (tab) switchTab(tab); });
   btn.addEventListener('touchend', (e) => { const tab = btn.dataset.tab; if (tab) switchTab(tab); });
-});
-document.querySelectorAll('.bottom-nav div').forEach(div => {
-  div.addEventListener('click', (e) => { const tab = div.dataset.tab; if (tab) switchTab(tab); });
-  div.addEventListener('touchend', (e) => { const tab = div.dataset.tab; if (tab) switchTab(tab); });
 });
 
 function refreshAll() { refreshStocks(); refreshNews(); refreshBobo(); }
