@@ -625,27 +625,46 @@ function toggleExercise() {
 }
 
 function renderMiniStocks() {
-  const show = ['D05.SI','O39.SI','U11.SI','^STI','AAPL','TSLA','NVDA','GC=F'];
+  const show = [
+    { sym: 'D05.SI', name: '星展' },
+    { sym: 'O39.SI', name: '华侨' },
+    { sym: 'U11.SI', name: '大华' },
+    { sym: '^STI', name: '海峡' },
+    { sym: 'AAPL', name: 'Apple' },
+    { sym: 'TSLA', name: 'Tesla' },
+    { sym: 'NVDA', name: 'NVIDIA' },
+    { sym: 'GC=F', name: '黄金' }
+  ];
   const container = $('miniStocks');
   if (!container) return;
   const cache = LS.get('stockCache', {});
   const now = Date.now();
-  if (cache.time && now - cache.time < 30 * 60 * 1000) {
-    show.forEach(sym => {
-      const p = cache.prices[sym];
-      if (!p || p.price == null) return;
-      const div = document.createElement('div');
-      div.className = 'mini-card';
-      div.innerHTML = '<div class="mini-name">' + sym + '</div><div class="mini-price">' + p.price.toFixed(2) + '</div>';
-      container.appendChild(div);
-    });
+  if (cache.time && now - cache.time < 30 * 60 * 1000 && cache.prices) {
+    const prices = cache.prices;
+    container.innerHTML = show.map(s => {
+      const p = prices[s.sym];
+      if (!p || p.price == null) return '';
+      const isUp = p.change != null && p.change >= 0;
+      const color = isUp ? '#00b894' : '#e17055';
+      const arrow = isUp ? '↑' : (p.change != null && p.change < 0 ? '↓' : '');
+      return `<div class="mini-card" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:white;border-radius:8px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#2d3436;">${s.name}</div>
+          <div style="font-size:11px;color:#636e72;">${s.sym}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700;font-size:14px;color:#2d3436;">${p.price.toFixed(2)}</div>
+          <div style="font-size:11px;color:${color};font-weight:600;">${arrow} ${p.change != null ? (p.change >= 0 ? '+' : '') + p.change.toFixed(2) : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
   } else {
-    container.innerHTML = '<div style="color:#999;font-size:12px;">加载中...</div>';
+    container.innerHTML = '<div style="color:#999;font-size:12px;padding:8px;">加载中...</div>';
     fetch(getApiBase() + '/api/stocks').then(r => r.json()).then(data => {
       LS.set('stockCache', { time: Date.now(), prices: data.prices || {} });
       renderMiniStocks();
     }).catch(() => {
-      container.innerHTML = '<div style="color:#999;font-size:12px;">刷新后显示</div>';
+      container.innerHTML = '<div style="color:#999;font-size:12px;padding:8px;">点击 🔄 刷新</div>';
     });
   }
 }
