@@ -869,17 +869,18 @@ function saveFortuneBirth() {
   const gender = $('fortuneGender').value;
   if (!dateVal) { alert('请先选择出生日期'); return; }
   const [y, m, d] = dateVal.split('-').map(Number);
-  LS.set('fortuneBirth', { year: y, month: m, day: d, gender });
+  LS.set('fortuneBirth', { year: y, month: m, day: d, gender, hour: 14, minute: 30 });
   renderFortune();
 }
 
+const DEFAULT_FORTUNE_BIRTH = { year: 1990, month: 6, day: 15, gender: 'female', hour: 14, minute: 30 };
+
 function renderFortune() {
   const result = $('fortuneResult');
-  const birth = LS.get('fortuneBirth');
+  let birth = LS.get('fortuneBirth');
   if (!birth) {
-    result.style.display = 'none';
-    $('fortuneInput').style.display = 'flex';
-    return;
+    birth = DEFAULT_FORTUNE_BIRTH;
+    LS.set('fortuneBirth', birth);
   }
   result.style.display = 'block';
   $('fortuneInput').style.display = 'none';
