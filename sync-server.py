@@ -164,6 +164,7 @@ if __name__ == '__main__':
     if not os.path.exists(STATE):
         with open(STATE, 'w', encoding='utf-8') as f:
             f.write('{}')
-    server = HTTPServer(('0.0.0.0', 8080), Handler)
-    print('sync server running at http://0.0.0.0:8080')
+    port = int(os.environ.get('PORT', 8080))
+    server = HTTPServer(('0.0.0.0', port), Handler)
+    print('sync server running at http://0.0.0.0:' + str(port))
     server.serve_forever()
