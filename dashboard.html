@@ -159,6 +159,7 @@
           <option value="male">男</option>
         </select>
         <button class="btn btn-secondary" onclick="saveFortuneBirth()">💾 保存生辰</button>
+        <button class="btn btn-secondary" id="editBirthBtn" onclick="editFortuneBirth()" style="display:none;">✏️ 修改生辰</button>
       </div>
       <div id="fortuneResult" style="margin-top:10px;font-size:14px;"></div>
     </div>
@@ -874,9 +875,22 @@ function saveFortuneBirth() {
   const [y, m, d] = dateVal.split('-').map(Number);
   const birth = { year: y, month: m, day: d, gender, hour: 14, minute: 30 };
   LS.set('fortuneBirth', birth);
+  const inputEl = $('fortuneInput');
+  if (inputEl) inputEl.style.display = 'none';
   result.style.display = 'block';
   result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   loadFortune(birth);
+}
+
+function editFortuneBirth() {
+  const inputEl = $('fortuneInput');
+  const result = $('fortuneResult');
+  if (inputEl) inputEl.style.display = 'flex';
+  if (result) result.style.display = 'none';
+  const editBtn = $('editBirthBtn');
+  if (editBtn) editBtn.style.display = 'none';
+  const saveBtn = document.querySelector('#fortuneInput .btn');
+  if (saveBtn) saveBtn.style.display = '';
 }
 
 function resetFortuneBirth() {
@@ -885,6 +899,10 @@ function resetFortuneBirth() {
   LS.set('fortuneBirth', birth);
   $('fortuneBirthDate').value = birth.year + '-' + String(birth.month).padStart(2,'0') + '-' + String(birth.day).padStart(2,'0');
   $('fortuneGender').value = birth.gender;
+  const inputEl = $('fortuneInput');
+  if (inputEl) inputEl.style.display = 'flex';
+  const editBtn = $('editBirthBtn');
+  if (editBtn) editBtn.style.display = 'none';
   result.style.display = 'block';
   result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   loadFortune(birth);
@@ -930,6 +948,8 @@ function loadFortune(birth) {
     `;
     result.style.display = 'block';
     result.innerHTML = html;
+    const editBtn = $('editBirthBtn');
+    if (editBtn) editBtn.style.display = '';
   }).catch(() => {
     result.style.display = 'block';
     result.innerHTML = '<div style="color:#e17055;">开运数据加载失败</div><button class="btn btn-secondary" onclick="resetFortuneBirth()" style="margin-top:8px;">重新加载</button>';
@@ -938,11 +958,20 @@ function loadFortune(birth) {
 
 function renderFortune() {
   const result = $('fortuneResult');
+  const inputEl = $('fortuneInput');
+  const editBtn = $('editBirthBtn');
   if (result) {
     result.style.display = 'block';
     result.innerHTML = '<div style="color:#636e72;">开运加载中...</div>';
   }
-  loadFortune(DEFAULT_FORTUNE_BIRTH);
+  let birth = LS.get('fortuneBirth');
+  if (!birth) {
+    birth = DEFAULT_FORTUNE_BIRTH;
+    LS.set('fortuneBirth', birth);
+  }
+  if (inputEl) inputEl.style.display = 'none';
+  if (editBtn) editBtn.style.display = '';
+  loadFortune(birth);
 }
 </script>
 
