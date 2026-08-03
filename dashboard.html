@@ -447,7 +447,8 @@ function renderNews() {
 }
 
 document.querySelectorAll(".left-nav button").forEach(btn => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
     const tab = btn.dataset.tab;
     document.querySelectorAll(".left-nav button").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("show"));
@@ -457,6 +458,11 @@ document.querySelectorAll(".left-nav button").forEach(btn => {
     if (tab === "bobo") refreshBobo();
     if (tab === "manifest") initManifest();
     if (tab === "news") refreshNews();
+  });
+  // Safari iOS fix: also listen for touch events
+  btn.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    btn.click();
   });
 });
 
