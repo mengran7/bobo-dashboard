@@ -17,11 +17,19 @@ NEWS_SOURCES = [
 
 FORTUNE_CACHE = os.path.join(DIR, 'fortune-cache.json')
 
+def _hour_to_time_index(hour):
+    return (hour + 1) % 24 // 2
+
 def _mingyu_post(path, payload):
     req = urllib.request.Request(
         f'https://aov.cc/api/v1{path}',
         data=json.dumps(payload).encode('utf-8'),
-        headers={'Content-Type': 'application/json'}
+        headers={
+            'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Origin': 'https://aov.cc',
+            'Referer': 'https://aov.cc/'
+        }
     )
     with urllib.request.urlopen(req, timeout=10) as resp:
         return json.loads(resp.read().decode('utf-8'))
@@ -170,18 +178,6 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'OK')
             return
-        return super().do_GET()
-
-    def do_POST(self):
-        if self.path == '/api/state':
-            length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(length)
-            with open(STATE, 'w', encoding='utf-8') as f:
-                f.write(body.decode('utf-8'))
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'OK')
-            return
         if self.path == '/api/fortune':
             try:
                 length = int(self.headers.get('Content-Length', 0))
@@ -191,11 +187,12 @@ class Handler(SimpleHTTPRequestHandler):
                 today = __import__('datetime').datetime.now()
                 today_str = f"{today.year}-{today.month}-{today.day}"
 
+                gender_cn = '女' if birth.get('gender') == 'female' else '男'
                 bazi_resp = _mingyu_post('/bazi/calculate', {
                     'year': birth.get('year', 1990),
                     'month': birth.get('month', 1),
                     'day': birth.get('day', 1),
-                    'gender': birth.get('gender', 'female'),
+                    'gender': gender_cn,
                     'birthHour': birth.get('hour', 12),
                     'birthMinute': birth.get('minute', 0),
                     'dateType': 'solar',
@@ -209,7 +206,7 @@ class Handler(SimpleHTTPRequestHandler):
                     'year': birth.get('year', 1990),
                     'month': birth.get('month', 1),
                     'day': birth.get('day', 1),
-                    'gender': birth.get('gender', 'female'),
+                    'gender': gender_cn,
                     'birthHour': birth.get('hour', 12),
                     'birthMinute': birth.get('minute', 0),
                     'dateType': 'solar',
@@ -225,10 +222,11 @@ class Handler(SimpleHTTPRequestHandler):
                         'year': birth.get('year', 1990),
                         'month': birth.get('month', 1),
                         'day': birth.get('day', 1),
-                        'gender': birth.get('gender', 'female'),
+                        'gender': gender_cn,
                         'birthHour': birth.get('hour', 12),
                         'birthMinute': birth.get('minute', 0),
-                        'dateType': 'solar'
+                        'dateType': 'solar',
+                        'timeIndex': _hour_to_time_index(birth.get('hour', 12))
                     }],
                     'eventType': 'custom'
                 })
@@ -253,7 +251,9 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(str(e).encode('utf-8'))
             return
-        return super().do_POST()
+        self.send_response(404)
+        self.end_headers()
+        self.wfile.write(b'Not Found')
 
     def log_message(self, format, *args):
         pass
