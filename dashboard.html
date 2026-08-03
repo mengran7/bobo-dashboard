@@ -76,9 +76,9 @@
   .floating-star { position: fixed; font-size: 20px; opacity: 0; pointer-events: none; z-index: 5; animation: floatStar 3s ease-out forwards; }
   @keyframes floatStar { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
   
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 8px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 30; }
-  .bottom-nav a { background: none; border: none; font-size: 10px; color: #636e72; text-decoration: none; flex: 1; padding: 4px 0; text-align: center; }
-  .bottom-nav a .emoji { display: block; font-size: 20px; margin-bottom: 2px; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0 env(safe-area-inset-bottom, 10px); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999; }
+  .bottom-nav a { background: none; border: none; font-size: 10px; color: #636e72; text-decoration: none; flex: 1; padding: 8px 0; text-align: center; cursor: pointer; display: block; -webkit-tap-highlight-color: transparent; min-height: 50px; }
+  .bottom-nav a .emoji { display: block; font-size: 22px; margin-bottom: 2px; pointer-events: none; }
   .bottom-nav a.active { color: #6c5ce7; font-weight: 600; }
   
   @media (min-width: 768px) {
@@ -115,11 +115,11 @@
 <button class="refresh-btn" onclick="refreshAll()" title="刷新">🔄</button>
 
 <div class="bottom-nav">
-  <a href="#today" class="active" data-tab="today"><span class="emoji">📋</span>今日</a>
-  <a href="#stocks" data-tab="stocks"><span class="emoji">📈</span>股票</a>
-  <a href="#manifest" data-tab="manifest"><span class="emoji">💭</span>显化</a>
-  <a href="#news" data-tab="news"><span class="emoji">📰</span>新闻</a>
-  <a href="#journal" data-tab="journal"><span class="emoji">📝</span>日记</a>
+  <a href="javascript:void(0)" class="active" data-tab="today" onclick="switchTab('today')"><span class="emoji">📋</span>今日</a>
+  <a href="javascript:void(0)" data-tab="stocks" onclick="switchTab('stocks')"><span class="emoji">📈</span>股票</a>
+  <a href="javascript:void(0)" data-tab="manifest" onclick="switchTab('manifest')"><span class="emoji">💭</span>显化</a>
+  <a href="javascript:void(0)" data-tab="news" onclick="switchTab('news')"><span class="emoji">📰</span>新闻</a>
+  <a href="javascript:void(0)" data-tab="journal" onclick="switchTab('journal')"><span class="emoji">📝</span>日记</a>
 </div>
 
 <div class="container">
